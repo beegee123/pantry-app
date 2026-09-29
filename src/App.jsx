@@ -5,6 +5,8 @@ import SignIn from './components/SignIn.jsx'
 import KitchenScreen from './components/KitchenScreen.jsx'
 import StoresScreen from './components/StoresScreen.jsx'
 import ItemForm from './components/ItemForm.jsx'
+import ShoppingScreen from './components/ShoppingScreen.jsx'
+import TabLayout from './components/TabLayout.jsx'
 
 // App decides WHICH screen to show: setup problem, loading, sign-in, or one of the app's screens.
 export default function App() {
@@ -44,7 +46,11 @@ export default function App() {
   // Signed in: pick the screen from the address bar.
   return (
     <Routes>
-      <Route path="/" element={<KitchenScreen />} />
+      {/* Screens inside TabLayout get the bottom tab bar. */}
+      <Route element={<TabLayout />}>
+        <Route path="/" element={<KitchenScreen />} />
+        <Route path="/shopping" element={<ShoppingScreen />} />
+      </Route>
       <Route path="/stores" element={<StoresScreen />} />
       <Route path="/items/new" element={<ItemForm />} />
       {/* :id is a placeholder — /items/abc123 shows the form for item abc123 */}

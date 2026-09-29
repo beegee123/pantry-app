@@ -51,6 +51,85 @@ body {
   color: var(--out);
 }
 
+/* Header right side: sign out + counts */
+.header-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.link-button {
+  min-height: 36px;
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  font: 500 13px var(--sans);
+  color: var(--muted);
+  cursor: pointer;
+}
+.link-button:hover { color: var(--ink); }
+
+/* Messages: loading, errors */
+.muted { color: var(--muted); }
+.center-message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px;
+  text-align: center;
+}
+.center-message p { margin: 0; }
+.center-message .primary { margin-top: 12px; }
+.notice {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f8e3dc;
+  color: #7a2a10;
+  font-size: 14px;
+}
+.notice-inline { margin: 0 16px 12px; }
+
+/* Buttons and forms */
+.primary {
+  height: 48px;
+  padding: 0 20px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--ink);
+  color: #fff;
+  font: 600 15px var(--sans);
+  cursor: pointer;
+}
+.primary:disabled { opacity: 0.6; cursor: default; }
+
+.sign-in {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 8px 20px;
+}
+.sign-in label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font: 600 11px var(--mono);
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.sign-in input {
+  height: 48px;
+  padding: 0 14px;
+  border: 1px solid #d6d3cc;
+  border-radius: 10px;
+  background: var(--surface);
+  font: 400 16px var(--sans);
+  color: var(--ink);
+}
+
 /* Filter chips: All / Low / Out */
 .filter-chips {
   display: flex;

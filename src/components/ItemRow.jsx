@@ -1,3 +1,4 @@
+import { Link } from 'react-router'
 import StatusControl from './StatusControl.jsx'
 
 // Turn an item's store list into the small grey line under its name.
@@ -16,7 +17,10 @@ export default function ItemRow({ item, onStatusChange }) {
   return (
     <li className="item-row">
       <div className="item-text">
-        <span className="item-name">{item.name}</span>
+        {/* Tap the name to edit the item. */}
+        <Link to={`/items/${item.id}`} className="item-name item-link">
+          {item.name}
+        </Link>
         <span className="item-store">{storeLabel(item.stores)}</span>
       </div>
       {/* The switch only knows the new status; we add which item it belongs to. */}

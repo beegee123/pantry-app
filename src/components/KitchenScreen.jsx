@@ -5,9 +5,7 @@ import FilterChips from './FilterChips.jsx'
 import { fetchItems, saveItemStatus } from '../api/items.js'
 import { supabase } from '../lib/supabase.js'
 import { subscribeToTables } from '../lib/realtime.js'
-
-// Categories we know about, in display order. Any new category goes at the end.
-const CATEGORY_ORDER = ['Dairy & eggs', 'Produce', 'Pantry', 'Frozen', 'Household']
+import { CATEGORIES } from '../lib/categories.js'
 
 function groupByCategory(items) {
   const groups = {}
@@ -132,8 +130,8 @@ export default function KitchenScreen() {
   const visibleItems = filter === 'all' ? items : items.filter((i) => i.status === filter)
   const groups = groupByCategory(visibleItems)
   const categories = [
-    ...CATEGORY_ORDER.filter((c) => groups[c]),
-    ...Object.keys(groups).filter((c) => !CATEGORY_ORDER.includes(c)),
+    ...CATEGORIES.filter((c) => groups[c]), // known categories, in order
+    ...Object.keys(groups).filter((c) => !CATEGORIES.includes(c)), // anything else at the end
   ]
 
   return (
@@ -147,6 +145,9 @@ export default function KitchenScreen() {
           <div className="header-actions">
             <Link to="/stores" className="small-button">
               Stores
+            </Link>
+            <Link to="/items/new" className="small-button add-button" aria-label="Add item">
+              +
             </Link>
             <button type="button" className="link-button" onClick={() => supabase.auth.signOut()}>
               Sign out

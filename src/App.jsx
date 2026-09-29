@@ -4,6 +4,7 @@ import { supabase, missingConfig } from './lib/supabase.js'
 import SignIn from './components/SignIn.jsx'
 import KitchenScreen from './components/KitchenScreen.jsx'
 import StoresScreen from './components/StoresScreen.jsx'
+import ItemForm from './components/ItemForm.jsx'
 
 // App decides WHICH screen to show: setup problem, loading, sign-in, or one of the app's screens.
 export default function App() {
@@ -45,6 +46,9 @@ export default function App() {
     <Routes>
       <Route path="/" element={<KitchenScreen />} />
       <Route path="/stores" element={<StoresScreen />} />
+      <Route path="/items/new" element={<ItemForm />} />
+      {/* :id is a placeholder — /items/abc123 shows the form for item abc123 */}
+      <Route path="/items/:id" element={<ItemForm />} />
       {/* Any unknown address goes back to the Kitchen. */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

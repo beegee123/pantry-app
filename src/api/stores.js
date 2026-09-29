@@ -60,3 +60,10 @@ export async function removeStore(storeId) {
   if (error) throw error
   if (data.length === 0) throw new Error('The store was not removed.')
 }
+
+// Just the id and name of every store — for the store picker on the item form.
+export async function fetchStoreOptions() {
+  const { data, error } = await supabase.from('stores').select('id, name').order('name')
+  if (error) throw error
+  return data
+}

@@ -51,6 +51,35 @@ body {
   color: var(--out);
 }
 
+/* Filter chips: All / Low / Out */
+.filter-chips {
+  display: flex;
+  gap: 8px;
+  padding: 0 20px 16px;
+}
+.chip {
+  height: 36px;
+  padding: 0 16px;
+  border: 1px solid #d6d3cc;
+  border-radius: 18px;
+  background: var(--surface);
+  font: 500 13px var(--sans);
+  color: var(--ink);
+  cursor: pointer;
+}
+.chip.is-on {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.empty {
+  margin: 32px 4px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 15px;
+}
+
 .item-list { padding: 0 16px; }
 .item-list section { margin-bottom: 16px; }
 .item-list ul {

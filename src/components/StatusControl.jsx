@@ -1,5 +1,5 @@
 // The In / Low / Out switch on each row.
-// Step 2: it only SHOWS the current status. Step 3 makes the buttons work.
+// It shows the current status and reports taps to its parent through `onChange`.
 
 const STATUSES = [
   { value: 'in', label: 'In' },
@@ -7,9 +7,10 @@ const STATUSES = [
   { value: 'out', label: 'Out' },
 ]
 
-// A component is a function that takes "props" (inputs) and returns what to draw.
-// Here the only prop is `status` — 'in', 'low' or 'out'.
-export default function StatusControl({ status }) {
+// Props:
+//   status   — the current status: 'in', 'low' or 'out'
+//   onChange — a function to call with the new status when a button is tapped
+export default function StatusControl({ status, onChange }) {
   return (
     <div className="status-control" role="group" aria-label="Stock status">
       {STATUSES.map((s) => (
@@ -18,6 +19,10 @@ export default function StatusControl({ status }) {
           type="button"
           className={status === s.value ? `is-on is-${s.value}` : ''}
           aria-pressed={status === s.value}
+          onClick={() => {
+            // Tapping the status it already has does nothing.
+            if (s.value !== status) onChange(s.value)
+          }}
         >
           {s.label}
         </button>

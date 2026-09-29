@@ -9,14 +9,21 @@ function storeLabel(stores) {
 }
 
 // One row in the Kitchen list.
-export default function ItemRow({ item }) {
+// Props:
+//   item           — the item to show
+//   onStatusChange — function(itemId, newStatus), provided by App
+export default function ItemRow({ item, onStatusChange }) {
   return (
     <li className="item-row">
       <div className="item-text">
         <span className="item-name">{item.name}</span>
         <span className="item-store">{storeLabel(item.stores)}</span>
       </div>
-      <StatusControl status={item.status} />
+      {/* The switch only knows the new status; we add which item it belongs to. */}
+      <StatusControl
+        status={item.status}
+        onChange={(newStatus) => onStatusChange(item.id, newStatus)}
+      />
     </li>
   )
 }

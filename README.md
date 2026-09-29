@@ -2,6 +2,11 @@
 
 Keep track of what's in, low or out in the kitchen, turn it into a shopping list grouped by store, and (later) plan a week of meals from what you have.
 
+## Docs
+
+- [Build plan](docs/BUILD_PLAN.md) — decisions, phases, steps and the data model
+- [Wireframes](docs/wireframes/README.md) — the original screen designs
+
 ## Stack
 
 - **Front end:** React, installed on the phone's home screen as a web app

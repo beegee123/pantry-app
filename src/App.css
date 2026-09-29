@@ -218,3 +218,84 @@ body {
 .status-control .is-in  { background: var(--ink); color: #fff; }
 .status-control .is-low { background: var(--low-bg); color: var(--low-ink); }
 .status-control .is-out { background: var(--out); color: #fff; }
+
+/* ---- Step 5a: navigation and the Stores screen ---- */
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Small bordered button, also used for links that look like buttons */
+.small-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #d6d3cc;
+  border-radius: 8px;
+  background: var(--surface);
+  font: 500 13px var(--sans);
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+}
+.small-button:hover { border-color: var(--ink); }
+
+/* Sub-screens: back link above the title */
+.screen-header--sub {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding-top: 12px;
+}
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 15px;
+  color: var(--muted);
+  text-decoration: none;
+}
+.back-link:hover { color: var(--ink); }
+
+.store-row { padding: 10px 8px 10px 14px; }
+.store-row--any {
+  background: transparent;
+  border-style: dashed;
+}
+.needed { color: var(--out); }
+.link-button.danger:hover { color: var(--out); }
+
+.rename-form,
+.add-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.rename-form input,
+.add-row input {
+  flex-grow: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid #d6d3cc;
+  border-radius: 10px;
+  background: var(--surface);
+  font: 400 16px var(--sans);
+  color: var(--ink);
+}
+.add-row { margin-top: 16px; }
+.item-list .notice { margin-bottom: 12px; }
+
+/* Text only screen readers announce (labels we don't need to show) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

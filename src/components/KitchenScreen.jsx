@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 import ItemRow from './ItemRow.jsx'
 import FilterChips from './FilterChips.jsx'
 import { fetchItems, saveItemStatus } from '../api/items.js'
 import { supabase } from '../lib/supabase.js'
+import { subscribeToTables } from '../lib/realtime.js'
 
 // Categories we know about, in display order. Any new category goes at the end.
 const CATEGORY_ORDER = ['Dairy & eggs', 'Produce', 'Pantry', 'Frozen', 'Household']
@@ -83,6 +85,12 @@ export default function KitchenScreen() {
     }
   }, []) // [] = set this up once, when the screen first appears
 
+  // Store names and item–store links show on every row, so reload when they change.
+  useEffect(
+    () => subscribeToTables('kitchen-stores', ['stores', 'item_stores'], () => setReloadCount((n) => n + 1)),
+    [],
+  )
+
   // OPTIMISTIC UPDATE: change the screen first, save in the background,
   // and put it back if the save fails.
   async function updateStatus(itemId, newStatus) {
@@ -136,9 +144,14 @@ export default function KitchenScreen() {
           <h1>Kitchen</h1>
         </div>
         <div className="header-side">
-          <button type="button" className="link-button" onClick={() => supabase.auth.signOut()}>
-            Sign out
-          </button>
+          <div className="header-actions">
+            <Link to="/stores" className="small-button">
+              Stores
+            </Link>
+            <button type="button" className="link-button" onClick={() => supabase.auth.signOut()}>
+              Sign out
+            </button>
+          </div>
           <span className="counts">
             {outCount} out · {lowCount} low
           </span>

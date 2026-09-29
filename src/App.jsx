@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
+import { Routes, Route, Navigate } from 'react-router'
 import { supabase, missingConfig } from './lib/supabase.js'
 import SignIn from './components/SignIn.jsx'
 import KitchenScreen from './components/KitchenScreen.jsx'
+import StoresScreen from './components/StoresScreen.jsx'
 
-// App decides WHICH screen to show: setup problem, loading, sign-in, or the kitchen.
+// App decides WHICH screen to show: setup problem, loading, sign-in, or one of the app's screens.
 export default function App() {
   // undefined = still checking, null = signed out, object = signed in
   const [session, setSession] = useState(undefined)
@@ -37,5 +39,14 @@ export default function App() {
 
   if (session === undefined) return <div className="screen center-message muted">Loading…</div>
   if (session === null) return <SignIn />
-  return <KitchenScreen />
+
+  // Signed in: pick the screen from the address bar.
+  return (
+    <Routes>
+      <Route path="/" element={<KitchenScreen />} />
+      <Route path="/stores" element={<StoresScreen />} />
+      {/* Any unknown address goes back to the Kitchen. */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
 }

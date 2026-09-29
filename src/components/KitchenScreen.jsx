@@ -46,6 +46,43 @@ export default function KitchenScreen() {
     }
   }, [reloadCount])
 
+  // LIVE SYNC: listen for changes made on other devices.
+  useEffect(() => {
+    const channel = supabase
+      .channel('items-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'items' }, (change) => {
+        if (change.eventType === 'UPDATE') {
+          // Someone changed an item: copy the new values into that row.
+          // (Its stores didn't change, so we keep the ones we already have.)
+          const row = change.new
+          setItems((current) =>
+            current?.map((i) =>
+              i.id === row.id
+                ? { ...i, name: row.name, category: row.category, status: row.status, usual_amount: row.usual_amount }
+                : i,
+            ),
+          )
+        } else {
+          // An item was added or deleted: simplest is to load the list again.
+          setReloadCount((n) => n + 1)
+        }
+      })
+      .subscribe()
+
+    // Phones pause web apps in the background and the live connection can drop.
+    // When the app comes back to the front, reload so nothing was missed.
+    function handleVisible() {
+      if (document.visibilityState === 'visible') setReloadCount((n) => n + 1)
+    }
+    document.addEventListener('visibilitychange', handleVisible)
+
+    // CLEANUP: stop listening when the screen closes (e.g. on sign out).
+    return () => {
+      supabase.removeChannel(channel)
+      document.removeEventListener('visibilitychange', handleVisible)
+    }
+  }, []) // [] = set this up once, when the screen first appears
+
   // OPTIMISTIC UPDATE: change the screen first, save in the background,
   // and put it back if the save fails.
   async function updateStatus(itemId, newStatus) {

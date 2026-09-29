@@ -22,3 +22,10 @@ Keep track of what's in, low or out in the kitchen, turn it into a shopping list
 Run the files in `supabase/` in order, in the Supabase SQL Editor.
 
 1. `001_pantry_tables.sql` — items, stores and the item–store link table, plus starter data
+2. `002_realtime.sql` — live updates for items across devices
+
+## Running locally
+
+1. Copy `.env.example` to `.env.local` and fill in your Supabase URL and publishable key.
+2. `npm install`
+3. `npm run dev`

@@ -29,6 +29,43 @@ function groupByStore(items) {
   })
 }
 
+// Store chips: every store where at least one needed item can be bought,
+// counting ALL items available there (not just the ones whose preferred store it is).
+function storeChips(items) {
+  const chips = new Map() // key → { key, name, count }
+  for (const item of items) {
+    if (item.stores.length === 0) {
+      if (!chips.has(ANY_STORE)) chips.set(ANY_STORE, { key: ANY_STORE, name: 'Any store', count: 0 })
+      chips.get(ANY_STORE).count++
+    }
+    for (const store of item.stores) {
+      if (!chips.has(store.id)) chips.set(store.id, { key: store.id, name: store.name, count: 0 })
+      chips.get(store.id).count++
+    }
+  }
+  return [...chips.values()].sort((a, b) => {
+    if (a.key === ANY_STORE) return 1
+    if (b.key === ANY_STORE) return -1
+    return a.name.localeCompare(b.name)
+  })
+}
+
+// One store's view: everything you can buy THERE, even if its preferred store is elsewhere.
+// "also at" lists the item's other stores, so you know it could wait for another trip.
+function itemsAtStore(items, storeKey) {
+  return items
+    .filter((item) =>
+      storeKey === ANY_STORE ? item.stores.length === 0 : item.stores.some((s) => s.id === storeKey),
+    )
+    .map((item) => ({
+      ...item,
+      alsoAt: item.stores
+        .filter((s) => s.id !== storeKey)
+        .map((s) => s.name)
+        .sort((a, b) => a.localeCompare(b)),
+    }))
+}
+
 // The small grey line under an item: "Usual: 1 bag · also at No Frills"
 function rowDetails(item) {
   const parts = []
@@ -133,10 +170,18 @@ export default function ShoppingScreen() {
     )
   }
 
+  // TWO VIEWS:
+  //   All        → each item once, under its preferred store (so nothing is bought twice)
+  //   One store  → everything you can buy at that store
   const groups = groupByStore(items)
+  const chips = storeChips(items)
   // If the chosen store has nothing left (e.g. after finishing), fall back to All.
-  const activeFilter = groups.some((g) => g.key === storeFilter) ? storeFilter : 'all'
-  const visibleGroups = activeFilter === 'all' ? groups : groups.filter((g) => g.key === activeFilter)
+  const activeChip = chips.find((c) => c.key === storeFilter)
+  const activeFilter = activeChip ? storeFilter : 'all'
+  const visibleGroups =
+    activeFilter === 'all'
+      ? groups
+      : [{ key: activeChip.key, name: activeChip.name, items: itemsAtStore(items, activeChip.key) }]
   const cartCount = items.filter((i) => i.in_cart).length
 
   return (
@@ -145,10 +190,14 @@ export default function ShoppingScreen() {
       <p className="screen-subtitle">
         {items.length === 0
           ? 'Nothing to buy right now.'
-          : `${plural(items.length, 'item')} across ${plural(groups.length, 'store')}`}
+          : activeFilter === 'all'
+            ? `${plural(items.length, 'item')} across ${plural(groups.length, 'store')}`
+            : activeFilter === ANY_STORE
+              ? 'Items with no store picked — buy them anywhere'
+              : `Everything you can get at ${activeChip.name}`}
       </p>
 
-      {groups.length > 1 && (
+      {chips.length > 1 && (
         <div className="filter-chips filter-chips--scroll" role="group" aria-label="Show store">
           <button
             type="button"
@@ -158,15 +207,15 @@ export default function ShoppingScreen() {
           >
             All
           </button>
-          {groups.map((g) => (
+          {chips.map((c) => (
             <button
-              key={g.key}
+              key={c.key}
               type="button"
-              className={activeFilter === g.key ? 'chip is-on' : 'chip'}
-              aria-pressed={activeFilter === g.key}
-              onClick={() => setStoreFilter(g.key)}
+              className={activeFilter === c.key ? 'chip is-on' : 'chip'}
+              aria-pressed={activeFilter === c.key}
+              onClick={() => setStoreFilter(c.key)}
             >
-              {g.name} {g.items.length}
+              {c.name} {c.count}
             </button>
           ))}
         </div>

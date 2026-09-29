@@ -32,8 +32,16 @@ Screens: Kitchen, Shopping list, Add / edit item, Stores. Done when the househol
 - [x] **Step 4 — Database.** Connect Supabase; sign in; load and save items so changes persist and sync live.
 - [x] **Step 5 — Stores.** Stores screen, multi-store picker with Preferred, and the Usual amount field on the item form.
 - [x] **Step 6 — Shopping list.** Low and Out items grouped by store; tick off in the cart; Finish trip sets them back to In.
+- [x] **Step 8 — Deploy.** Host it and add it to your phone's home screen.
+
+Phase 1 is complete: the app is live on Vercel and on the home screen. Quick add and change password moved to Phase 1.1.
+
+## Phase 1.1 — Small improvements
+
+Quick wins on top of the live app, done in any order.
+
 - [ ] **Step 7 — Quick add.** Type "out of eggs" to find the item and mark it Out (voice comes later).
-- [ ] **Step 8 — Deploy.** Host it and add it to your phone's home screen.
+- [ ] **Step 8b — Change password.** A small Account screen (next to Sign out) where each household member sets a new password, entered twice, so passwords set for others can be replaced and nobody needs the Supabase dashboard for it.
 
 ## Phase 1.5 — Chat bot: Telegram and WhatsApp
 
@@ -83,7 +91,9 @@ Starts after Phase 3, so there are recipes and menus to reason over. A second ch
 
 - **AI menu suggestions:** new recipes from an AI model, imported by matching each ingredient to a pantry item.
 - **Voice capture:** "we're out of rice" via a phone shortcut or chat bot.
-- **Household sharing:** separate logins, with who changed what.
+- **Who changed what:** record which household member changed an item's status or ticked it in the cart, and show it ("Eggs marked Out by Bee, 2 h ago").
+- **Multiple households (multi-tenancy):** today the app is one shared household, and every signed-in user sees everything. To offer it to other families, add a `households` table, tag every item and store with its household, and tighten the security rules so people only see their own household's rows.
+- **Roles and permissions:** today every member can add, edit and delete anything. Optionally make some actions admin-only, such as deleting items, removing stores or adding members.
 - **Barcode scan** to add items.
 - **Reminders:** a weekly digest before shopping day, or a nudge when an always-stocked item goes Low.
 - **Offline use:** see the list in the store with no signal.

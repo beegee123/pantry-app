@@ -211,9 +211,10 @@ export default function ItemForm() {
                       type="button"
                       className={preferred ? 'pref is-on' : 'pref'}
                       aria-pressed={preferred}
+                      aria-label={preferred ? `${store.name} is the preferred store` : `Make ${store.name} the preferred store`}
                       onClick={() => togglePreferred(store.id)}
                     >
-                      {preferred ? '★ Preferred' : 'Preferred'}
+                      {preferred ? '★ Preferred' : '☆ Make preferred'}
                     </button>
                   )}
                 </li>

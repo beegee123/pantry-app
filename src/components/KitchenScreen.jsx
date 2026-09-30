@@ -18,6 +18,7 @@ function groupByCategory(items) {
 
 const EMPTY_MESSAGES = {
   all: 'No items yet.',
+  in: 'Nothing is in stock right now.',
   low: 'Nothing is low right now.',
   out: 'Nothing is out right now.',
 }

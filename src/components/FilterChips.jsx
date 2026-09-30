@@ -1,7 +1,8 @@
-// The All / Low / Out chips under the header.
+// The All / In / Low / Out chips under the header.
 
 const FILTERS = [
   { value: 'all', label: 'All' },
+  { value: 'in', label: 'In' },
   { value: 'low', label: 'Low' },
   { value: 'out', label: 'Out' },
 ]

@@ -42,6 +42,7 @@ Quick wins on top of the live app, done in any order.
 
 - [ ] **Step 7 — Quick add.** Type "out of eggs" to find the item and mark it Out (voice comes later).
 - [ ] **Step 8b — Change password.** A small Account screen (next to Sign out) where each household member sets a new password, entered twice, so passwords set for others can be replaced and nobody needs the Supabase dashboard for it.
+- [ ] **Step 8c — Fingerprint / Face ID sign-in (passkeys).** On the Account screen, "Add fingerprint sign-in" saves a passkey; the sign-in screen gets a "Sign in with fingerprint / Face ID" button. Uses Supabase's passkey sign-in (beta, experimental API). Do it after the custom domain is set up: a passkey is tied to the web address, and changing the domain later invalidates it. Needs the Passkeys switch and domain entered under Authentication → Passkeys in Supabase.
 
 ## Phase 1.5 — Chat bot: Telegram and WhatsApp
 

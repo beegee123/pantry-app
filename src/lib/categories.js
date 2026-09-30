@@ -1,3 +1,3 @@
 // The categories the app knows about, in display order.
 // Shared by the Kitchen list (grouping) and the item form (category chips).
-export const CATEGORIES = ['Dairy & eggs', 'Produce', 'Pantry', 'Frozen', 'Household']
+export const CATEGORIES = ['Dairy & eggs', 'Produce', 'Pantry', 'Frozen', 'Household', 'Hygiene']

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import StatusControl from './StatusControl.jsx'
 import { fetchItem, saveItem, deleteItem } from '../api/items.js'
 import { fetchStoreOptions } from '../api/stores.js'
@@ -21,6 +21,8 @@ export default function ItemForm() {
   const { id } = useParams() // undefined on /items/new
   const isNew = !id
   const navigate = useNavigate() // lets code move to another screen
+  const [searchParams] = useSearchParams() // e.g. /items/new?name=Oat%20milk from the Kitchen search
+  const startName = searchParams.get('name') ?? ''
 
   const [form, setForm] = useState(null) // null = loading
   const [stores, setStores] = useState([])
@@ -36,7 +38,7 @@ export default function ItemForm() {
       .then(([storeList, item]) => {
         if (ignore) return
         setStores(storeList)
-        if (isNew) setForm(EMPTY_ITEM)
+        if (isNew) setForm({ ...EMPTY_ITEM, name: startName })
         else if (item) setForm(item)
         else setNotFound(true)
       })
@@ -46,7 +48,7 @@ export default function ItemForm() {
     return () => {
       ignore = true
     }
-  }, [id, isNew])
+  }, [id, isNew, startName])
 
   // Change one field of the form, keeping the rest (immutability again).
   const setField = (field, value) => setForm((f) => ({ ...f, [field]: value }))

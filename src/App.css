@@ -577,3 +577,49 @@ body {
 
 .notice-success { background: #dcebdc; color: #1d4527; }
 .finish-button { width: 100%; margin-top: 8px; }
+
+/* ---- Kitchen search ---- */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 0 20px 12px;
+}
+.search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.search-box input {
+  flex-grow: 1;
+  min-width: 0;
+  height: 44px;
+  padding: 0 44px 0 40px;
+  border: 1px solid #d6d3cc;
+  border-radius: 10px;
+  background: var(--surface);
+  font: 400 16px var(--sans); /* 16px stops iPhones zooming in on focus */
+  color: var(--ink);
+}
+.search-box input::-webkit-search-cancel-button { display: none; } /* we draw our own ✕ */
+.search-clear {
+  position: absolute;
+  right: 0;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  font-size: 15px;
+  color: var(--muted);
+  cursor: pointer;
+}
+.search-clear:hover { color: var(--ink); }
+
+div.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+div.empty p { margin: 0; }

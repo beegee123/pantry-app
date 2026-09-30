@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import ItemRow from './ItemRow.jsx'
 import FilterChips from './FilterChips.jsx'
+import SearchBox from './SearchBox.jsx'
 import { fetchItems, saveItemStatus } from '../api/items.js'
 import { supabase } from '../lib/supabase.js'
 import { subscribeToTables } from '../lib/realtime.js'
@@ -16,6 +17,10 @@ function groupByCategory(items) {
   return groups
 }
 
+// Lower-case and strip accents, so "creme" finds "Crème fraîche".
+const normalize = (text) =>
+  text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+
 const EMPTY_MESSAGES = {
   all: 'No items yet.',
   in: 'Nothing is in stock right now.',
@@ -28,6 +33,7 @@ export default function KitchenScreen() {
   const [loadError, setLoadError] = useState(null)
   const [saveError, setSaveError] = useState(null)
   const [filter, setFilter] = useState('all')
+  const [query, setQuery] = useState('') // search text
   const [reloadCount, setReloadCount] = useState(0) // bump this to load again
 
   // useEffect runs AFTER the screen draws — the right place to fetch data.
@@ -128,7 +134,11 @@ export default function KitchenScreen() {
   const outCount = items.filter((i) => i.status === 'out').length
   const lowCount = items.filter((i) => i.status === 'low').length
 
-  const visibleItems = filter === 'all' ? items : items.filter((i) => i.status === filter)
+  // Two filters work together: the status chip AND the search text.
+  const search = normalize(query)
+  const visibleItems = items
+    .filter((i) => filter === 'all' || i.status === filter)
+    .filter((i) => search === '' || normalize(i.name).includes(search))
   const groups = groupByCategory(visibleItems)
   const categories = [
     ...CATEGORIES.filter((c) => groups[c]), // known categories, in order
@@ -160,6 +170,7 @@ export default function KitchenScreen() {
         </div>
       </header>
 
+      <SearchBox value={query} onChange={setQuery} />
       <FilterChips filter={filter} onChange={setFilter} />
 
       {saveError && (
@@ -169,7 +180,19 @@ export default function KitchenScreen() {
       )}
 
       <main className="item-list">
-        {categories.length === 0 && <p className="empty">{EMPTY_MESSAGES[filter]}</p>}
+        {categories.length === 0 && !search && <p className="empty">{EMPTY_MESSAGES[filter]}</p>}
+
+        {categories.length === 0 && search && (
+          <div className="empty">
+            <p>
+              No {filter === 'all' ? '' : `${filter} `}items match “{query.trim()}”.
+            </p>
+            {/* Offer to create it, with the name already filled in. */}
+            <Link to={`/items/new?name=${encodeURIComponent(query.trim())}`} className="small-button">
+              + Add “{query.trim()}” as a new item
+            </Link>
+          </div>
+        )}
 
         {categories.map((category) => (
           <section key={category}>

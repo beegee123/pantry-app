@@ -40,9 +40,11 @@ Phase 1 is complete: the app is live on Vercel and on the home screen. Quick add
 
 Quick wins on top of the live app, done in any order.
 
+- [x] **Step 7a — Search.** A search box on the Kitchen screen narrows the list as you type (ignores case and accents) and works together with the All / In / Low / Out chips. No match offers "+ Add … as a new item" with the name filled in. Quick add (step 7) will build on the same box.
 - [ ] **Step 7 — Quick add.** Type "out of eggs" to find the item and mark it Out (voice comes later).
 - [ ] **Step 8b — Change password.** A small Account screen (next to Sign out) where each household member sets a new password, entered twice, so passwords set for others can be replaced and nobody needs the Supabase dashboard for it.
 - [ ] **Step 8c — Fingerprint / Face ID sign-in (passkeys).** On the Account screen, "Add fingerprint sign-in" saves a passkey; the sign-in screen gets a "Sign in with fingerprint / Face ID" button. Uses Supabase's passkey sign-in (beta, experimental API). Do it after the custom domain is set up: a passkey is tied to the web address, and changing the domain later invalidates it. Needs the Passkeys switch and domain entered under Authentication → Passkeys in Supabase.
+- [ ] **Step 8d — Categories screen.** Categories become their own table (like stores): add, rename, remove and reorder them in the app, and the Kitchen sections follow that order. Needs a migration that creates the table from the categories already in use and links each item to it.
 
 ## Phase 1.5 — Chat bot: Telegram and WhatsApp
 

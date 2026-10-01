@@ -91,6 +91,17 @@ export async function saveItem(item) {
 
 export async function deleteItem(itemId) {
   const { data, error } = await supabase.from('items').delete().eq('id', itemId).select('id')
+  // 23503 = "still referenced": a recipe uses this item (recipe_ingredients won't let it go).
+  if (error?.code === '23503') {
+    throw new Error('This item is used in a recipe. Remove it from those recipes first.')
+  }
   if (error) throw error
   if (data.length === 0) throw new Error('The item was not deleted.')
+}
+
+// ---- Phase 2: pantry items for the recipe ingredient picker ----
+export async function fetchItemOptions() {
+  const { data, error } = await supabase.from('items').select('id, name, category, status').order('name')
+  if (error) throw error
+  return data
 }

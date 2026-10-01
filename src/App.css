@@ -816,3 +816,14 @@ div.empty p { margin: 0; }
 .photo-actions { display: flex; gap: 8px; }
 .small-button:disabled { opacity: 0.5; cursor: default; }
 .small-button--danger:hover:not(:disabled) { border-color: var(--out); color: var(--out); }
+
+/* ---------- Duplicate recipe ---------- */
+.detail-actions { display: flex; gap: 8px; }
+.copy-hint {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ecebe6;
+  font-size: 14px;
+  line-height: 1.4;
+}

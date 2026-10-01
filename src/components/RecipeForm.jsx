@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import IngredientPicker from './IngredientPicker.jsx'
 import { fetchRecipe, saveRecipe, deleteRecipe, MEAL_TYPES } from '../api/recipes.js'
 import { fetchItemOptions, saveItem } from '../api/items.js'
@@ -15,10 +15,28 @@ const EMPTY_RECIPE = {
   ingredients: [],
 }
 
-// One screen for both "New recipe" (/recipes/new) and "Edit recipe" (/recipes/:id/edit).
+// The starting point for a duplicate: everything from the original except its id,
+// photo (a copy gets its own) and favourite star; the name gets " (copy)" so it's unique.
+function copyOf(recipe) {
+  return {
+    name: `${recipe.name} (copy)`,
+    meal_type: recipe.meal_type,
+    minutes: recipe.minutes,
+    servings: recipe.servings,
+    is_favourite: false,
+    basics: recipe.basics,
+    method: recipe.method,
+    ingredients: recipe.ingredients,
+  }
+}
+
+// One screen for "New recipe" (/recipes/new), "Duplicate" (/recipes/new?from=<id>)
+// and "Edit recipe" (/recipes/:id/edit).
 export default function RecipeForm() {
   const { id } = useParams()
   const isNew = !id
+  const [searchParams] = useSearchParams()
+  const copyFromId = isNew ? searchParams.get('from') : null // set when duplicating
   const navigate = useNavigate()
 
   const [form, setForm] = useState(null) // null = loading
@@ -27,16 +45,21 @@ export default function RecipeForm() {
   const [notFound, setNotFound] = useState(false)
   const [saveError, setSaveError] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [copiedFrom, setCopiedFrom] = useState(null) // the original's name, for the hint
 
   useEffect(() => {
     let ignore = false
-    Promise.all([fetchItemOptions(), isNew ? null : fetchRecipe(id)])
+    const recipeId = isNew ? copyFromId : id // the recipe to load, if any
+    Promise.all([fetchItemOptions(), recipeId ? fetchRecipe(recipeId) : null])
       .then(([itemList, recipe]) => {
         if (ignore) return
         setItems(itemList)
-        if (isNew) setForm(EMPTY_RECIPE)
-        else if (recipe) setForm(recipe)
-        else setNotFound(true)
+        if (!recipeId) setForm(EMPTY_RECIPE)
+        else if (!recipe) setNotFound(true)
+        else if (isNew) {
+          setForm(copyOf(recipe)) // a duplicate: nothing is saved until you press Save
+          setCopiedFrom(recipe.name)
+        } else setForm(recipe)
       })
       .catch((err) => {
         if (!ignore) setLoadError(err.message)
@@ -44,7 +67,7 @@ export default function RecipeForm() {
     return () => {
       ignore = true
     }
-  }, [id, isNew])
+  }, [id, isNew, copyFromId])
 
   const setField = (field, value) => setForm((f) => ({ ...f, [field]: value }))
 
@@ -97,10 +120,11 @@ export default function RecipeForm() {
 
   const header = (
     <header className="form-header">
-      <Link to={isNew ? '/recipes' : `/recipes/${id}`} className="back-link">
+      {/* Cancel goes back where you came from: the recipe being edited or copied, or the list. */}
+      <Link to={id || copyFromId ? `/recipes/${id ?? copyFromId}` : '/recipes'} className="back-link">
         Cancel
       </Link>
-      <h1>{isNew ? 'New recipe' : 'Edit recipe'}</h1>
+      <h1>{copyFromId ? 'Duplicate recipe' : isNew ? 'New recipe' : 'Edit recipe'}</h1>
       <span className="form-header-spacer" />
     </header>
   )
@@ -134,6 +158,13 @@ export default function RecipeForm() {
       {header}
 
       <form className="item-form" onSubmit={handleSubmit}>
+        {copiedFrom && (
+          <p className="copy-hint">
+            Copied from <strong>{copiedFrom}</strong>. Change the name and anything that’s different, then save.
+            The original stays as it is.
+          </p>
+        )}
+
         <label className="field">
           <span className="field-label">Name</span>
           <input
@@ -141,6 +172,8 @@ export default function RecipeForm() {
             onChange={(e) => setField('name', e.target.value)}
             placeholder="e.g. Jollof rice"
             required
+            autoFocus={Boolean(copiedFrom)}
+            onFocus={copiedFrom ? (e) => e.target.select() : undefined}
           />
         </label>
 

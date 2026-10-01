@@ -149,9 +149,15 @@ export default function RecipeDetail() {
       <header className="screen-header screen-header--sub">
         <div className="detail-topbar">
           {back}
-          <Link to={`/recipes/${recipe.id}/edit`} className="small-button">
-            Edit
-          </Link>
+          <div className="detail-actions">
+            {/* Opens the New recipe form filled in from this one. */}
+            <Link to={`/recipes/new?from=${recipe.id}`} className="small-button">
+              Duplicate
+            </Link>
+            <Link to={`/recipes/${recipe.id}/edit`} className="small-button">
+              Edit
+            </Link>
+          </div>
         </div>
         <h1>
           {recipe.name}

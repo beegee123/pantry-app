@@ -80,6 +80,7 @@ Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recip
 **2c — Photos**
 
 - [x] **Step 13 — Photos.** One photo per recipe: take or choose one on the recipe screen, shrunk on the phone (longest side 1280 px, JPEG up to ~250 KB), uploaded to a private Supabase Storage bucket (`recipe-photos`, household only) and linked by `photo_path`. Thumbnails in the list, a large photo on the recipe screen with Change / Remove, letter placeholder when empty. Deleting a recipe deletes its photo.
+- [x] **Step 13a — Duplicate a recipe.** A Duplicate button on the recipe screen opens the form filled in from the original (named "… (copy)", favourite off, no photo). Change what's different and save; the original is untouched and nothing is saved until you press Save.
 
 ## Phase 3 — Weekly menu & generator (v3)
 

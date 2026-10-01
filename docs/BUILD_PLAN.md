@@ -1,6 +1,6 @@
 # Pantry App — Build Plan
 
-*Copied from the live Build Plan doc on 2026-09-29. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
+*Copied from the live Build Plan doc on 2026-09-30. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
 
 One app, built in three phases: pantry and shopping first, then recipes with photos, then a weekly menu with a generator. Each phase is usable on its own before the next starts.
 
@@ -79,7 +79,7 @@ Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recip
 
 **2c — Photos**
 
-- [ ] **Step 13 — Photos.** One photo per recipe: take or choose one, shrink it to about 200 KB on the phone, upload to a private Supabase Storage folder, save `photo_path`. Letter placeholder when empty.
+- [x] **Step 13 — Photos.** One photo per recipe: take or choose one on the recipe screen, shrunk on the phone (longest side 1280 px, JPEG up to ~250 KB), uploaded to a private Supabase Storage bucket (`recipe-photos`, household only) and linked by `photo_path`. Thumbnails in the list, a large photo on the recipe screen with Change / Remove, letter placeholder when empty. Deleting a recipe deletes its photo.
 
 ## Phase 3 — Weekly menu & generator (v3)
 

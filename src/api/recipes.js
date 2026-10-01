@@ -1,5 +1,6 @@
 // Everything that reads or writes recipes.
 import { supabase } from '../lib/supabase.js'
+import { deletePhotoFile } from './photos.js'
 
 export const MEAL_TYPES = [
   { value: 'breakfast', label: 'Breakfast' },
@@ -24,7 +25,7 @@ function friendlyError(error, name) {
 export async function fetchRecipes() {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, name, meal_type, minutes, is_favourite, recipe_ingredients ( item_id, items ( status ) )')
+    .select('id, name, meal_type, minutes, is_favourite, photo_path, recipe_ingredients ( item_id, items ( status ) )')
     .order('name')
   if (error) throw error
 
@@ -34,6 +35,7 @@ export async function fetchRecipes() {
     meal_type: r.meal_type,
     minutes: r.minutes,
     is_favourite: r.is_favourite,
+    photo_path: r.photo_path,
     ingredientStatuses: r.recipe_ingredients.map((ri) => ri.items.status),
   }))
 }
@@ -93,8 +95,14 @@ export async function saveRecipe(recipe) {
   return data // the recipe's id
 }
 
+// Delete the recipe, then its photo file (the database can't delete storage files for us).
 export async function deleteRecipe(recipeId) {
-  const { data, error } = await supabase.from('recipes').delete().eq('id', recipeId).select('id')
+  const { data, error } = await supabase.from('recipes').delete().eq('id', recipeId).select('id, photo_path')
   if (error) throw error
   if (data.length === 0) throw new Error('The recipe was not deleted.')
+  try {
+    await deletePhotoFile(data[0].photo_path)
+  } catch {
+    // The recipe is gone; a leftover photo file is harmless.
+  }
 }

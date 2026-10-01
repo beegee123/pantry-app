@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import SearchBox from './SearchBox.jsx'
+import RecipeThumb from './RecipeThumb.jsx'
 import { fetchRecipes, mealLabel } from '../api/recipes.js'
+import { getPhotoUrls } from '../api/photos.js'
 import { subscribeToTables } from '../lib/realtime.js'
 import { readiness, compareByReadiness } from '../lib/readiness.js'
 
@@ -26,6 +28,7 @@ function recipeMeta(recipe) {
 
 export default function RecipesScreen() {
   const [recipes, setRecipes] = useState(null)
+  const [photoUrls, setPhotoUrls] = useState({}) // photo_path → signed link
   const [loadError, setLoadError] = useState(null)
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState('all')
@@ -39,6 +42,12 @@ export default function RecipesScreen() {
         if (ignore) return
         setRecipes(data)
         setLoadError(null)
+        // Photos load second, so the list shows straight away. If links fail, letters stay.
+        return getPhotoUrls(data.map((r) => r.photo_path))
+          .then((urls) => {
+            if (!ignore) setPhotoUrls(urls)
+          })
+          .catch(() => {})
       })
       .catch((err) => {
         if (!ignore) setLoadError(err.message)
@@ -136,6 +145,7 @@ export default function RecipesScreen() {
               {visible.map((recipe) => (
                 <li key={recipe.id}>
                   <Link to={`/recipes/${recipe.id}`} className="item-row recipe-row">
+                    <RecipeThumb name={recipe.name} url={photoUrls[recipe.photo_path]} />
                     <div className="item-text">
                       <span className="item-name">
                         {recipe.name}

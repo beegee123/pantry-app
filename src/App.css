@@ -789,3 +789,30 @@ div.empty p { margin: 0; }
   white-space: pre-wrap; /* keep the line breaks you typed */
   line-height: 1.5;
 }
+
+/* ---------- Recipe photos (step 13) ---------- */
+.recipe-thumb {
+  display: block;
+  flex: none;
+  object-fit: cover; /* crop to fill the box instead of squashing the photo */
+  background: #ecebe6;
+}
+.recipe-thumb--small { width: 56px; height: 56px; border-radius: 8px; }
+.recipe-thumb--hero { width: 100%; height: 200px; border-radius: 12px; }
+/* No photo: the first letter on a dashed tile */
+.recipe-thumb--letter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px dashed #bdb9b0;
+  color: var(--muted);
+  font: 600 22px var(--sans);
+}
+.recipe-thumb--hero.recipe-thumb--letter { font-size: 56px; }
+.recipe-row { padding-left: 8px; }
+
+.detail-photo { display: flex; flex-direction: column; gap: 8px; }
+.photo-actions { display: flex; gap: 8px; }
+.small-button:disabled { opacity: 0.5; cursor: default; }
+.small-button--danger:hover:not(:disabled) { border-color: var(--out); color: var(--out); }

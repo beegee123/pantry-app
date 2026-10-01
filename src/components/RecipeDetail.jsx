@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { fetchRecipe, mealLabel } from '../api/recipes.js'
+import { getPhotoUrls, setRecipePhoto, removeRecipePhoto } from '../api/photos.js'
+import { shrinkImage } from '../lib/image.js'
+import RecipeThumb from './RecipeThumb.jsx'
 import { subscribeToTables } from '../lib/realtime.js'
 import { readiness } from '../lib/readiness.js'
 
@@ -33,6 +36,10 @@ export default function RecipeDetail() {
   const [recipe, setRecipe] = useState(undefined) // undefined = loading, null = not found
   const [loadError, setLoadError] = useState(null)
   const [reloadCount, setReloadCount] = useState(0)
+  const [photoUrl, setPhotoUrl] = useState(null)
+  const [photoBusy, setPhotoBusy] = useState(false)
+  const [photoError, setPhotoError] = useState(null)
+  const fileInput = useRef(null) // the hidden file picker; the button "clicks" it
 
   useEffect(() => {
     let ignore = false
@@ -49,6 +56,55 @@ export default function RecipeDetail() {
       ignore = true
     }
   }, [id, reloadCount])
+
+  // Get a viewable link whenever the recipe points at a different photo.
+  const photoPath = recipe?.photo_path
+  useEffect(() => {
+    let ignore = false
+    if (!photoPath) {
+      setPhotoUrl(null)
+      return
+    }
+    getPhotoUrls([photoPath])
+      .then((urls) => {
+        if (!ignore) setPhotoUrl(urls[photoPath] ?? null)
+      })
+      .catch(() => {
+        if (!ignore) setPhotoUrl(null) // the letter tile shows instead
+      })
+    return () => {
+      ignore = true
+    }
+  }, [photoPath])
+
+  // Shared by "Add / Change photo" and "Remove photo": busy flag, error message, reload.
+  async function runPhotoAction(action) {
+    setPhotoBusy(true)
+    setPhotoError(null)
+    try {
+      await action()
+      setReloadCount((n) => n + 1)
+    } catch (err) {
+      setPhotoError(err.message)
+    } finally {
+      setPhotoBusy(false)
+    }
+  }
+
+  function handleFileChosen(event) {
+    const file = event.target.files[0]
+    event.target.value = '' // so picking the same photo again still fires onChange
+    if (!file) return
+    runPhotoAction(async () => {
+      const blob = await shrinkImage(file)
+      await setRecipePhoto(recipe.id, recipe.photo_path, blob)
+    })
+  }
+
+  function handleRemovePhoto() {
+    if (!window.confirm('Remove this photo?')) return
+    runPhotoAction(() => removeRecipePhoto(recipe.id, recipe.photo_path))
+  }
 
   // An ingredient's status changes in the Kitchen, or someone edits the recipe → reload.
   useEffect(
@@ -105,6 +161,27 @@ export default function RecipeDetail() {
       </header>
 
       <main className="item-list detail-body">
+        <section className="detail-photo">
+          <RecipeThumb name={recipe.name} url={photoUrl} size="hero" />
+          <div className="photo-actions">
+            {/* accept="image/*" lets a phone offer "Take photo" or "Choose from library". */}
+            <input ref={fileInput} type="file" accept="image/*" hidden onChange={handleFileChosen} />
+            <button type="button" className="small-button" disabled={photoBusy} onClick={() => fileInput.current.click()}>
+              {photoBusy ? 'Saving…' : recipe.photo_path ? 'Change photo' : 'Add photo'}
+            </button>
+            {recipe.photo_path && (
+              <button type="button" className="small-button small-button--danger" disabled={photoBusy} onClick={handleRemovePhoto}>
+                Remove photo
+              </button>
+            )}
+          </div>
+          {photoError && (
+            <p className="notice" role="alert">
+              {photoError}
+            </p>
+          )}
+        </section>
+
         <ReadinessCard r={r} />
 
         <section>

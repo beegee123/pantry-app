@@ -9,6 +9,7 @@ import ShoppingScreen from './components/ShoppingScreen.jsx'
 import TabLayout from './components/TabLayout.jsx'
 import RecipesScreen from './components/RecipesScreen.jsx'
 import RecipeForm from './components/RecipeForm.jsx'
+import RecipeDetail from './components/RecipeDetail.jsx'
 
 // App decides WHICH screen to show: setup problem, loading, sign-in, or one of the app's screens.
 export default function App() {
@@ -59,6 +60,7 @@ export default function App() {
       {/* :id is a placeholder — /items/abc123 shows the form for item abc123 */}
       <Route path="/items/:id" element={<ItemForm />} />
       <Route path="/recipes/new" element={<RecipeForm />} />
+      <Route path="/recipes/:id" element={<RecipeDetail />} />
       <Route path="/recipes/:id/edit" element={<RecipeForm />} />
       {/* Any unknown address goes back to the Kitchen. */}
       <Route path="*" element={<Navigate to="/" replace />} />

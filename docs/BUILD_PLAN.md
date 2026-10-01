@@ -40,6 +40,9 @@ Phase 1 is complete: the app is live on Vercel and on the home screen. Quick add
 
 Quick wins on top of the live app, done in any order.
 
+- [x] **Fix — Sign-in retry.** Requests that fail with "JWT issued at future" (a brief clock mismatch between Supabase's servers right after sign-in) are retried automatically, up to three times over about 3½ seconds.
+- [x] **Store chips show everything at that store.** The All view still lists each item once under its preferred store; tapping a store chip shows every needed item you can buy there, with "also at" hints. The item form's other stores now say "☆ Make preferred".
+- [x] **Hygiene category and In filter.** Hygiene added to the categories; the Kitchen filters are now All / In / Low / Out.
 - [x] **Step 7a — Search.** A search box on the Kitchen screen narrows the list as you type (ignores case and accents) and works together with the All / In / Low / Out chips. No match offers "+ Add … as a new item" with the name filled in. Quick add (step 7) will build on the same box.
 - [ ] **Step 7 — Quick add.** Type "out of eggs" to find the item and mark it Out (voice comes later).
 - [ ] **Step 8b — Change password.** A small Account screen (next to Sign out) where each household member sets a new password, entered twice, so passwords set for others can be replaced and nobody needs the Supabase dashboard for it.
@@ -60,13 +63,23 @@ Starts after v1 ships. One shared "brain" in n8n does the work; each chat app is
 
 ## Phase 2 — Recipes & photos (v2)
 
-Screens: Recipes, Recipe detail. Done when you can open a recipe and see at a glance what you're missing.
+Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recipe and see at a glance what you're missing. Started early (before finishing Phase 1.1) so there are real recipes to use.
 
-- [ ] **Step 9 — Recipe tables.** Add Recipes and RecipeIngredients (the link between a recipe and a pantry item, with an amount like "2 cups" as display text).
-- [ ] **Step 10 — Recipe form.** Add a recipe; pick each ingredient from the pantry or create a new item on the spot. Mark favourites.
-- [ ] **Step 11 — Readiness.** Work out Ready / Low / Missing for each recipe from its ingredients' status; sort the list "Ready first."
-- [ ] **Step 12 — Recipe detail.** Ingredients with status, "Add missing to shopping list," and the assumed basics line.
-- [ ] **Step 13 — Photos.** One photo per recipe: pick or take a photo, shrink it to about 200 KB, upload to Supabase storage, save `photo_url`. Letter placeholder when empty.
+**Decisions:** meal types are Breakfast, Lunch, Dinner, Snack, Side, Dessert. "Assumed basics" (salt, oil, water) is a short note on the recipe that never affects readiness. A pantry item created from the recipe form starts as In (switchable to Out). No "Add missing to shopping list" button: missing ingredients are Out items, which are already on the shopping list.
+
+**2a — Recipe tables and form**
+
+- [x] **Step 9 — Recipe tables.** `recipes` and `recipe_ingredients` (each ingredient is a pantry item, with an amount like "2 cups" as display text and its position in the list), with security rules and live sync. `save_recipe` saves a recipe and its whole ingredient list in one transaction. Items used in a recipe can't be deleted.
+- [x] **Step 10 — Recipe form.** Name, meal type, minutes, servings, favourite, assumed basics and method. Ingredients are picked by searching the pantry, can be reordered, and a missing one can be added to the pantry on the spot. Recipes tab added to the bottom bar.
+
+**2b — Readiness and recipe detail**
+
+- [x] **Step 11 — Readiness.** Work out Ready / Low / Missing for each recipe from its ingredients' live status; sort Ready first; search plus ★ Favourites and Under 30 min filters.
+- [x] **Step 12 — Recipe detail.** Ingredients with status, "Missing 2: already on your shopping list" (opens the list), assumed basics, method, and an Edit button.
+
+**2c — Photos**
+
+- [ ] **Step 13 — Photos.** One photo per recipe: take or choose one, shrink it to about 200 KB on the phone, upload to a private Supabase Storage folder, save `photo_path`. Letter placeholder when empty.
 
 ## Phase 3 — Weekly menu & generator (v3)
 
@@ -103,7 +116,7 @@ Starts after Phase 3, so there are recipes and menus to reason over. A second ch
 
 ## Data model
 
-Arrows point from a table to the one it references. The two linking tables (`item_stores`, `recipe_ingredients`) are the same many-to-many pattern as a junction object in Salesforce. Phase 1 tables exist today; the rest are planned.
+Arrows point from a table to the one it references. The two linking tables (`item_stores`, `recipe_ingredients`) are the same many-to-many pattern as a junction object in Salesforce. Phase 1 and Phase 2 tables exist today; `meal_plan` is planned.
 
 ```mermaid
 erDiagram
@@ -133,16 +146,20 @@ erDiagram
     }
     RECIPES {
         uuid id PK
-        text name
-        text meal_type
+        text name "unique"
+        meal_type meal_type "breakfast | lunch | dinner | snack | side | dessert"
         int minutes
+        int servings
         boolean is_favourite
-        text photo_url
+        text basics "never affects readiness"
+        text method
+        text photo_path
     }
     RECIPE_INGREDIENTS {
         uuid recipe_id FK
         uuid item_id FK
         text amount_text "e.g. 2 cups"
+        int position
     }
     MEAL_PLAN {
         date date

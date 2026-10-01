@@ -1,14 +1,16 @@
-// The search box at the top of the Kitchen screen.
-// It only holds the text; KitchenScreen decides what matches.
+// A search box with a magnifier and a clear (✕) button.
+// It only holds the text; the screen using it decides what matches.
 
 // Props:
-//   value    — the current search text
-//   onChange — function(newText), called on every keystroke and when cleared
-export default function SearchBox({ value, onChange }) {
+//   value       — the current search text
+//   onChange    — function(newText), called on every keystroke and when cleared
+//   id          — unique id for the input (needed when a screen has a label for it)
+//   placeholder — hint text, e.g. "Search items"
+export default function SearchBox({ value, onChange, id = 'kitchen-search', placeholder = 'Search items' }) {
   return (
     <div className="search-box" role="search">
-      <label htmlFor="kitchen-search" className="visually-hidden">
-        Search items
+      <label htmlFor={id} className="visually-hidden">
+        {placeholder}
       </label>
       <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
         strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -16,9 +18,9 @@ export default function SearchBox({ value, onChange }) {
         <path d="M20 20l-3.5-3.5" />
       </svg>
       <input
-        id="kitchen-search"
+        id={id}
         type="search"
-        placeholder="Search items"
+        placeholder={placeholder}
         autoComplete="off"
         value={value}
         onChange={(e) => onChange(e.target.value)}

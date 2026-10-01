@@ -75,8 +75,8 @@ export default function RecipeForm() {
     setBusy(true)
     setSaveError(null)
     try {
-      await saveRecipe({ ...form, id: isNew ? null : id })
-      navigate('/recipes')
+      const savedId = await saveRecipe({ ...form, id: isNew ? null : id })
+      navigate(`/recipes/${savedId}`) // straight to the recipe, to see what's missing
     } catch (err) {
       setSaveError(err.message)
       setBusy(false)
@@ -97,7 +97,7 @@ export default function RecipeForm() {
 
   const header = (
     <header className="form-header">
-      <Link to="/recipes" className="back-link">
+      <Link to={isNew ? '/recipes' : `/recipes/${id}`} className="back-link">
         Cancel
       </Link>
       <h1>{isNew ? 'New recipe' : 'Edit recipe'}</h1>

@@ -735,3 +735,57 @@ div.empty p { margin: 0; }
 .new-item-title { margin: 0; font-weight: 600; }
 .new-item-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .new-item-actions { display: flex; justify-content: flex-end; gap: 8px; }
+
+/* ---- Phase 2b: readiness and recipe detail ---- */
+.pill-in { background: var(--track); color: #4a4843; }
+.pill-ready { background: #dcebdc; color: #1d4527; }
+.pill-empty { background: transparent; border: 1px dashed #bdb9b0; color: var(--muted); }
+
+.detail-topbar { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.screen-header--sub h1 { margin: 4px 0 0; font-size: 28px; }
+.detail-body { display: flex; flex-direction: column; gap: 20px; }
+
+.readiness-card {
+  margin: 0;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.readiness-card.is-ready { color: #1d4527; background: #eef5ee; border-color: #cfe3cf; font-weight: 600; }
+.readiness-title { margin: 0; font-size: 17px; font-weight: 700; color: var(--out); }
+.readiness-card .text-link { min-height: 32px; }
+
+.detail-ingredients {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.detail-ingredients li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--line);
+}
+.detail-ingredients li:last-child { border-bottom: 0; }
+.detail-ing-name { flex-grow: 1; min-width: 0; font-size: 15px; font-weight: 500; }
+.detail-ing-amount { font: 500 12px var(--mono); color: var(--muted); }
+.detail-ingredients .pill { min-width: 38px; text-align: center; }
+.detail-basics { margin-top: 10px; padding: 0 4px; }
+.detail-method {
+  margin: 0;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  white-space: pre-wrap; /* keep the line breaks you typed */
+  line-height: 1.5;
+}

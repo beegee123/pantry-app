@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import StatusControl from './StatusControl.jsx'
-import { CATEGORIES } from '../lib/categories.js'
+import { useCategories } from '../lib/useCategories.js'
 
 // Same matching as the Kitchen search: ignore case and accents.
 const normalize = (text) =>
@@ -17,6 +17,7 @@ const MAX_SUGGESTIONS = 6
 //   onChange     — function(newIngredients)
 //   onCreateItem — async function({ name, category, status }) → the new item { id, name, ... }
 export default function IngredientPicker({ items, ingredients, onChange, onCreateItem }) {
+  const categories = useCategories()
   const [query, setQuery] = useState('')
   const [creating, setCreating] = useState(null) // { name, category, status } while the mini form is open
   const [busy, setBusy] = useState(false)
@@ -153,7 +154,7 @@ export default function IngredientPicker({ items, ingredients, onChange, onCreat
         <div className="new-item-box">
           <p className="new-item-title">New pantry item: {creating.name}</p>
           <div className="chip-row">
-            {CATEGORIES.map((c) => (
+            {categories.map((c) => (
               <button
                 key={c}
                 type="button"

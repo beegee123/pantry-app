@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import StatusControl from './StatusControl.jsx'
 import { fetchItem, saveItem, deleteItem } from '../api/items.js'
 import { fetchStoreOptions } from '../api/stores.js'
-import { CATEGORIES } from '../lib/categories.js'
+import { useCategories } from '../lib/useCategories.js'
 
 // What a brand-new item starts as.
 const EMPTY_ITEM = {
@@ -18,6 +18,7 @@ const EMPTY_ITEM = {
 
 // One screen for both "Add item" (/items/new) and "Edit item" (/items/:id).
 export default function ItemForm() {
+  const categories = useCategories()
   const { id } = useParams() // undefined on /items/new
   const isNew = !id
   const navigate = useNavigate() // lets code move to another screen
@@ -140,8 +141,8 @@ export default function ItemForm() {
     )
   }
 
-  // If an old item has a category that's no longer in the list, still offer it.
-  const categoryChoices = CATEGORIES.includes(form.category) ? CATEGORIES : [...CATEGORIES, form.category]
+  // If the item's category isn't in the list (yet), still offer it.
+  const categoryChoices = categories.includes(form.category) ? categories : [...categories, form.category]
 
   return (
     <div className="screen">

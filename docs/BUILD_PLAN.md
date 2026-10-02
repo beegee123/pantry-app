@@ -47,7 +47,8 @@ Quick wins on top of the live app, done in any order.
 - [ ] **Step 7 — Quick add.** Type "out of eggs" to find the item and mark it Out (voice comes later).
 - [ ] **Step 8b — Change password.** A small Account screen (next to Sign out) where each household member sets a new password, entered twice, so passwords set for others can be replaced and nobody needs the Supabase dashboard for it.
 - [ ] **Step 8c — Fingerprint / Face ID sign-in (passkeys).** On the Account screen, "Add fingerprint sign-in" saves a passkey; the sign-in screen gets a "Sign in with fingerprint / Face ID" button. Uses Supabase's passkey sign-in (beta, experimental API). Do it after the custom domain is set up: a passkey is tied to the web address, and changing the domain later invalidates it. Needs the Passkeys switch and domain entered under Authentication → Passkeys in Supabase.
-- [ ] **Step 8d — Categories screen.** Categories become their own table (like stores): add, rename, remove and reorder them in the app, and the Kitchen sections follow that order. Needs a migration that creates the table from the categories already in use and links each item to it.
+- [x] **Step 8d-1 — Categories table.** Categories move from the app's code into a `categories` table (name and display order), filled from the old list (with Meat & fish) plus any category already in use. Each item links to one (`category_id`); a category still in use can't be deleted. The Kitchen, item form and recipe form read the list and order from the database. The old text column stays for now, kept in step by a trigger, so saving by name (save_item, recipe imports) still works and an unknown name creates the category.
+- [ ] **Step 8d-2 — Categories screen.** Add, rename, reorder and remove categories in the app (next to Stores); the Kitchen sections follow the order. Removing one that items use asks where to move them.
 
 ## Phase 1.5 — Chat bot: Telegram and WhatsApp
 
@@ -133,10 +134,16 @@ erDiagram
         uuid id PK
         text name "unique"
     }
+    CATEGORIES ||--o{ ITEMS : "groups"
+    CATEGORIES {
+        uuid id PK
+        text name "unique"
+        int position "display order"
+    }
     ITEMS {
         uuid id PK
         text name "unique"
-        text category
+        uuid category_id FK
         item_status status "in | low | out"
         text usual_amount
         boolean always_stocked

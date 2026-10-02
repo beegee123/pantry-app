@@ -6,7 +6,7 @@ import SearchBox from './SearchBox.jsx'
 import { fetchItems, saveItemStatus } from '../api/items.js'
 import { supabase } from '../lib/supabase.js'
 import { subscribeToTables } from '../lib/realtime.js'
-import { CATEGORIES } from '../lib/categories.js'
+import { useCategories } from '../lib/useCategories.js'
 
 function groupByCategory(items) {
   const groups = {}
@@ -29,6 +29,7 @@ const EMPTY_MESSAGES = {
 }
 
 export default function KitchenScreen() {
+  const categoryOrder = useCategories() // names, in the order set on the database
   const [items, setItems] = useState(null) // null = still loading
   const [loadError, setLoadError] = useState(null)
   const [saveError, setSaveError] = useState(null)
@@ -141,8 +142,8 @@ export default function KitchenScreen() {
     .filter((i) => search === '' || normalize(i.name).includes(search))
   const groups = groupByCategory(visibleItems)
   const categories = [
-    ...CATEGORIES.filter((c) => groups[c]), // known categories, in order
-    ...Object.keys(groups).filter((c) => !CATEGORIES.includes(c)), // anything else at the end
+    ...categoryOrder.filter((c) => groups[c]), // categories in their saved order
+    ...Object.keys(groups).filter((c) => !categoryOrder.includes(c)), // anything else (e.g. still loading) at the end
   ]
 
   return (

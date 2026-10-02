@@ -86,11 +86,13 @@ Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recip
 
 Screens: Weekly menu, Generate a week. Done when one button plans the week and fills the shopping list.
 
-- [ ] **Step 14 — MealPlan table.** One row per date and meal (breakfast / lunch / dinner) pointing to a recipe, plus a locked flag.
-- [ ] **Step 15 — Weekly menu screen.** Pick a recipe per day by hand; show readiness and thumbnails.
+**Decisions:** dinners only for now (the table can take breakfast and lunch later). Weeks run Monday to Sunday. Steps 14, 15 and 18 come first (Phase 3a), one at a time, before the generator.
+
+- [x] **Step 14 — MealPlan table.** One row per date and meal pointing to a recipe, plus a locked flag for step 17. One dinner per day; deleting a recipe removes it from the plan.
+- [ ] **Step 15 — Weekly menu screen.** Menu tab: Monday to Sunday with ‹ › to move between weeks. Each day shows the recipe's thumbnail and readiness (tap to open it) and a Change button; empty days say "+ Pick a recipe". The picker lists dinners first, Ready first, with "Also Thu" on recipes already planned that week, and can clear the day.
 - [ ] **Step 16 — Generator.** Score each recipe (In +, Low −, Out −−, favourites +), apply the rules (no repeats, skip last week, long recipes on weekends), fill the chosen days.
 - [ ] **Step 17 — Lock and re-roll.** Keep locked days; regenerate the rest.
-- [ ] **Step 18 — Week to shopping list.** Collect Low and Out ingredients across the week, deduplicated, and add them in one tap.
+- [ ] **Step 18 — Week to shopping list.** Out and Low items are already on the shopping list, so there's no button. Instead, the Menu screen shows "This week needs 2 items: Rice (Thu) · Tomato paste (Thu)" with a link to the list, and the Shopping list tags each item with the dinners that need it ("For Thu Jollof rice") and adds a This week chip covering the next 7 days.
 
 ## Phase 3.5 — OpenClaw kitchen assistant
 
@@ -117,7 +119,7 @@ Starts after Phase 3, so there are recipes and menus to reason over. A second ch
 
 ## Data model
 
-Arrows point from a table to the one it references. The two linking tables (`item_stores`, `recipe_ingredients`) are the same many-to-many pattern as a junction object in Salesforce. Phase 1 and Phase 2 tables exist today; `meal_plan` is planned.
+Arrows point from a table to the one it references. The two linking tables (`item_stores`, `recipe_ingredients`) are the same many-to-many pattern as a junction object in Salesforce. All of these tables exist today (`meal_plan` from step 14).
 
 ```mermaid
 erDiagram
@@ -163,10 +165,10 @@ erDiagram
         int position
     }
     MEAL_PLAN {
-        date date
-        text meal
+        date plan_date PK
+        text meal PK "dinner for now"
         uuid recipe_id FK
-        boolean is_locked
+        boolean is_locked "for step 17"
     }
 ```
 

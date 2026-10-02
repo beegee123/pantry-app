@@ -883,3 +883,9 @@ div.empty p { margin: 0; }
 
 /* Shopping list: "For Tue Jollof rice" */
 .menu-tag { font-size: 12px; color: var(--ink); font-weight: 500; }
+
+/* ---------- Categories screen (step 8d-2) ---------- */
+.category-row { flex-wrap: wrap; padding-left: 6px; }
+.move-items-box { flex-basis: 100%; margin-top: 4px; }
+/* Kitchen header: with Stores, Categories, + and Sign out, let the buttons wrap onto a second line. */
+.header-actions { flex-wrap: wrap; justify-content: flex-end; }

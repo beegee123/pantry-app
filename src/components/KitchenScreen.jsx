@@ -158,6 +158,9 @@ export default function KitchenScreen() {
             <Link to="/stores" className="small-button">
               Stores
             </Link>
+            <Link to="/categories" className="small-button">
+              Categories
+            </Link>
             <Link to="/items/new" className="small-button add-button" aria-label="Add item">
               +
             </Link>

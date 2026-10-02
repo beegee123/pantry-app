@@ -34,7 +34,8 @@ begin
     return v_id;
   end if;
 
-  insert into items (name, category, status) values (p_name, p_category, 'in')
+  -- category_id_for finds the category by name, or creates it (009_categories.sql).
+  insert into items (name, category_id, status) values (p_name, category_id_for(p_category), 'in')
   returning id into v_id;
   insert into import_log values (p_name, p_name, 'NEW item in ' || p_category || ' (In)');
   return v_id;

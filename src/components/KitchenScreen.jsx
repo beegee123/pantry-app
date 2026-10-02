@@ -29,7 +29,7 @@ const EMPTY_MESSAGES = {
 }
 
 export default function KitchenScreen() {
-  const categoryOrder = useCategories() // names, in the order set on the database
+  const categoryOrder = useCategories().map((c) => c.name) // names, in the order set on the database
   const [items, setItems] = useState(null) // null = still loading
   const [loadError, setLoadError] = useState(null)
   const [saveError, setSaveError] = useState(null)
@@ -63,13 +63,17 @@ export default function KitchenScreen() {
           // Someone changed an item: copy the new values into that row.
           // (Its stores didn't change, so we keep the ones we already have.)
           const row = change.new
-          setItems((current) =>
-            current?.map((i) =>
-              i.id === row.id
-                ? { ...i, name: row.name, category: row.category, status: row.status, usual_amount: row.usual_amount }
-                : i,
-            ),
-          )
+          setItems((current) => {
+            const old = current?.find((i) => i.id === row.id)
+            // Moved to another category: reload, to get the new category's name.
+            if (old && old.category_id !== row.category_id) {
+              setReloadCount((n) => n + 1)
+              return current
+            }
+            return current?.map((i) =>
+              i.id === row.id ? { ...i, name: row.name, status: row.status, usual_amount: row.usual_amount } : i,
+            )
+          })
         } else {
           // An item was added or deleted: simplest is to load the list again.
           setReloadCount((n) => n + 1)

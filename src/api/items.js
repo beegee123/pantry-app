@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase.js'
 // Ask for each item AND, through the item_stores link table, the names of its stores.
 // Supabase follows the foreign keys for us — like a relationship query in SOQL.
 const ITEM_FIELDS = `
-  id, name, category, status, usual_amount,
+  id, name, category_id, categories ( name ), status, usual_amount,
   item_stores ( is_preferred, stores ( name ) )
 `
 
@@ -15,7 +15,8 @@ function toAppItem(row) {
   return {
     id: row.id,
     name: row.name,
-    category: row.category,
+    category_id: row.category_id,
+    category: row.categories.name, // the name, joined from the categories table (for headings)
     status: row.status,
     usual_amount: row.usual_amount,
     stores: row.item_stores.map((link) => ({
@@ -50,7 +51,7 @@ export async function saveItemStatus(itemId, status) {
 export async function fetchItem(itemId) {
   const { data, error } = await supabase
     .from('items')
-    .select('id, name, category, status, usual_amount, always_stocked, item_stores ( store_id, is_preferred )')
+    .select('id, name, category_id, status, usual_amount, always_stocked, item_stores ( store_id, is_preferred )')
     .eq('id', itemId)
     .maybeSingle() // one row or null, instead of a list
   if (error) throw error
@@ -60,7 +61,7 @@ export async function fetchItem(itemId) {
   return {
     id: data.id,
     name: data.name,
-    category: data.category,
+    category_id: data.category_id,
     status: data.status,
     usual_amount: data.usual_amount ?? '',
     always_stocked: data.always_stocked,
@@ -75,7 +76,7 @@ export async function saveItem(item) {
   const { data, error } = await supabase.rpc('save_item', {
     p_id: item.id ?? null,
     p_name: item.name,
-    p_category: item.category,
+    p_category_id: item.category_id, // the link, not the name (supabase/011_drop_category_text.sql)
     p_status: item.status,
     p_usual_amount: item.usual_amount,
     p_always_stocked: item.always_stocked,
@@ -101,7 +102,16 @@ export async function deleteItem(itemId) {
 
 // ---- Phase 2: pantry items for the recipe ingredient picker ----
 export async function fetchItemOptions() {
-  const { data, error } = await supabase.from('items').select('id, name, category, status').order('name')
+  const { data, error } = await supabase
+    .from('items')
+    .select('id, name, category_id, categories ( name ), status')
+    .order('name')
   if (error) throw error
-  return data
+  return data.map((row) => ({
+    id: row.id,
+    name: row.name,
+    category_id: row.category_id,
+    category: row.categories.name,
+    status: row.status,
+  }))
 }

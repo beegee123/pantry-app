@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import StatusControl from './StatusControl.jsx'
-import { useCategories } from '../lib/useCategories.js'
+import { useCategories, defaultCategoryId } from '../lib/useCategories.js'
 
 // Same matching as the Kitchen search: ignore case and accents.
 const normalize = (text) =>
@@ -12,14 +12,14 @@ const MAX_SUGGESTIONS = 6
 // Every ingredient is a PANTRY ITEM — you search your pantry, or create a new item here.
 //
 // Props:
-//   items        — all pantry items [{ id, name, category, status }]
+//   items        — all pantry items [{ id, name, category_id, category (name), status }]
 //   ingredients  — the chosen list, in order [{ item_id, name, amount_text }]
 //   onChange     — function(newIngredients)
-//   onCreateItem — async function({ name, category, status }) → the new item { id, name, ... }
+//   onCreateItem — async function({ name, category_id, category, status }) → the new item { id, name, ... }
 export default function IngredientPicker({ items, ingredients, onChange, onCreateItem }) {
   const categories = useCategories()
   const [query, setQuery] = useState('')
-  const [creating, setCreating] = useState(null) // { name, category, status } while the mini form is open
+  const [creating, setCreating] = useState(null) // { name, category_id, status } while the mini form is open
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
 
@@ -53,14 +53,16 @@ export default function IngredientPicker({ items, ingredients, onChange, onCreat
   function startCreate() {
     const name = query.trim()
     // "scotch bonnet" → "Scotch bonnet", to match how the rest of the pantry is written.
-    setCreating({ name: name.charAt(0).toUpperCase() + name.slice(1), category: 'Pantry', status: 'in' })
+    setCreating({ name: name.charAt(0).toUpperCase() + name.slice(1), category_id: defaultCategoryId(categories), status: 'in' })
     setError(null)
   }
   async function finishCreate() {
     setBusy(true)
     setError(null)
     try {
-      const item = await onCreateItem(creating)
+      const categoryId = creating.category_id ?? defaultCategoryId(categories)
+      const category = categories.find((c) => c.id === categoryId)?.name // shown in suggestions
+      const item = await onCreateItem({ ...creating, category_id: categoryId, category })
       add(item)
       setCreating(null)
     } catch (err) {
@@ -156,13 +158,13 @@ export default function IngredientPicker({ items, ingredients, onChange, onCreat
           <div className="chip-row">
             {categories.map((c) => (
               <button
-                key={c}
+                key={c.id}
                 type="button"
-                className={creating.category === c ? 'chip is-on' : 'chip'}
-                aria-pressed={creating.category === c}
-                onClick={() => setCreating({ ...creating, category: c })}
+                className={creating.category_id === c.id ? 'chip is-on' : 'chip'}
+                aria-pressed={creating.category_id === c.id}
+                onClick={() => setCreating({ ...creating, category_id: c.id })}
               >
-                {c}
+                {c.name}
               </button>
             ))}
           </div>

@@ -3,12 +3,12 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import StatusControl from './StatusControl.jsx'
 import { fetchItem, saveItem, deleteItem } from '../api/items.js'
 import { fetchStoreOptions } from '../api/stores.js'
-import { useCategories } from '../lib/useCategories.js'
+import { useCategories, defaultCategoryId } from '../lib/useCategories.js'
 
 // What a brand-new item starts as.
 const EMPTY_ITEM = {
   name: '',
-  category: 'Pantry',
+  category_id: null, // null = the default (Pantry) until you pick one
   status: 'in',
   usual_amount: '',
   always_stocked: false,
@@ -86,7 +86,8 @@ export default function ItemForm() {
     setBusy(true)
     setSaveError(null)
     try {
-      await saveItem({ ...form, id: isNew ? null : id })
+      // Send the category that's showing as selected (the default one if you didn't pick).
+      await saveItem({ ...form, id: isNew ? null : id, category_id: form.category_id ?? defaultCategoryId(categories) })
       navigate('/') // back to the Kitchen
     } catch (err) {
       setSaveError(err.message)
@@ -141,8 +142,8 @@ export default function ItemForm() {
     )
   }
 
-  // If the item's category isn't in the list (yet), still offer it.
-  const categoryChoices = categories.includes(form.category) ? categories : [...categories, form.category]
+  // Which chip is on: the item's category, or the default for a new item.
+  const categoryId = form.category_id ?? defaultCategoryId(categories)
 
   return (
     <div className="screen">
@@ -173,15 +174,15 @@ export default function ItemForm() {
         <fieldset className="field">
           <legend className="field-label">Category</legend>
           <div className="chip-row">
-            {categoryChoices.map((c) => (
+            {categories.map((c) => (
               <button
-                key={c}
+                key={c.id}
                 type="button"
-                className={form.category === c ? 'chip is-on' : 'chip'}
-                aria-pressed={form.category === c}
-                onClick={() => setField('category', c)}
+                className={categoryId === c.id ? 'chip is-on' : 'chip'}
+                aria-pressed={categoryId === c.id}
+                onClick={() => setField('category_id', c.id)}
               >
-                {c}
+                {c.name}
               </button>
             ))}
           </div>

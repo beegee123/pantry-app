@@ -78,18 +78,18 @@ export default function RecipeForm() {
 
   // Called by the ingredient picker to create a pantry item on the spot.
   // Reuses save_item from step 5, so the new item is a normal pantry item (no stores yet).
-  async function createItem({ name, category, status }) {
+  async function createItem({ name, category_id, category, status }) {
     const newId = await saveItem({
       id: null,
       name,
-      category,
+      category_id,
       status,
       usual_amount: '',
       always_stocked: false,
       storeIds: [],
       preferredStoreId: null,
     })
-    const item = { id: newId, name: name.trim(), category, status }
+    const item = { id: newId, name: name.trim(), category_id, category, status }
     setItems((list) => [...list, item].sort((a, b) => a.name.localeCompare(b.name)))
     return item
   }

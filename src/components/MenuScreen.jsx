@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import RecipeThumb from './RecipeThumb.jsx'
-import { fetchPlan } from '../api/menu.js'
+import { fetchPlan, neededByMenu } from '../api/menu.js'
 import { getPhotoUrls } from '../api/photos.js'
 import { subscribeToTables } from '../lib/realtime.js'
 import { readiness } from '../lib/readiness.js'
@@ -10,12 +10,15 @@ import {
   dayName,
   dayNumber,
   fromISODate,
+  shortDay,
   startOfWeek,
   toISODate,
   today,
   weekDates,
   weekRangeLabel,
 } from '../lib/dates.js'
+
+const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 
 // "This week", "Next week", "Last week", or "Week of Oct 12".
 function weekTitle(monday) {
@@ -24,6 +27,39 @@ function weekTitle(monday) {
   if (weeksAway === 1) return 'Next week'
   if (weeksAway === -1) return 'Last week'
   return `Week of ${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+}
+
+// Step 18: what the rest of the week still needs. Out and Low items are already on the
+// shopping list (that's how the list works), so this card just shows them and links there.
+function WeekNeeds({ plan, fromDate, title }) {
+  const upcoming = plan.filter((p) => p.plan_date >= fromDate)
+  if (upcoming.length === 0) return null
+
+  const needed = neededByMenu(upcoming)
+  if (needed.size === 0) {
+    return <p className="readiness-card is-ready">Everything for the planned dinners is in.</p>
+  }
+
+  // One entry per item, with the first day it's needed: "Rice (Tue)".
+  const names = new Map()
+  for (const { recipe } of upcoming) {
+    for (const ing of recipe.ingredients) {
+      if (needed.has(ing.item_id)) names.set(ing.item_id, ing.name)
+    }
+  }
+  const list = [...needed.entries()].map(([itemId, uses]) => `${names.get(itemId)} (${shortDay(uses[0].plan_date)})`)
+
+  return (
+    <div className="readiness-card week-needs">
+      <p className="readiness-title">
+        {title} needs {plural(needed.size, 'item')}
+      </p>
+      <p className="week-needs-list">{list.join(' · ')}</p>
+      <Link to="/shopping?show=menu" className="text-link">
+        Already on your shopping list ›
+      </Link>
+    </div>
+  )
 }
 
 export default function MenuScreen() {
@@ -169,6 +205,15 @@ export default function MenuScreen() {
               )
             })}
           </ul>
+
+          {/* Past days don't need shopping: count from today in the current week; skip weeks that are over. */}
+          {dates[6] >= todayISO && (
+            <WeekNeeds
+              plan={plan}
+              fromDate={isThisWeek ? todayISO : dates[0]}
+              title={weekTitle(monday).startsWith('Week of') ? 'This menu' : weekTitle(monday)}
+            />
+          )}
         </main>
       )}
     </div>

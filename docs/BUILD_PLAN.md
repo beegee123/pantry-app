@@ -92,7 +92,7 @@ Screens: Weekly menu, Generate a week. Done when one button plans the week and f
 - [x] **Step 15 — Weekly menu screen.** Menu tab: Monday to Sunday with ‹ › to move between weeks. Each day shows the recipe's thumbnail and readiness (tap to open it) and a Change button; empty days say "+ Pick a recipe". The picker lists dinners first, Ready first, with "Also Thu" on recipes already planned that week, and can clear the day.
 - [ ] **Step 16 — Generator.** Score each recipe (In +, Low −, Out −−, favourites +), apply the rules (no repeats, skip last week, long recipes on weekends), fill the chosen days.
 - [ ] **Step 17 — Lock and re-roll.** Keep locked days; regenerate the rest.
-- [ ] **Step 18 — Week to shopping list.** Out and Low items are already on the shopping list, so there's no button. Instead, the Menu screen shows "This week needs 2 items: Rice (Thu) · Tomato paste (Thu)" with a link to the list, and the Shopping list tags each item with the dinners that need it ("For Thu Jollof rice") and adds a This week chip covering the next 7 days.
+- [x] **Step 18 — Week to shopping list.** Out and Low items are already on the shopping list, so there's no button. Instead, the Menu screen shows "This week needs 2 items: Rice (Thu) · Tomato paste (Thu)" with a link to the list, and the Shopping list tags each item with the dinners that need it ("For Thu Jollof rice") and adds a This week chip covering the next 7 days.
 
 ## Phase 3.5 — OpenClaw kitchen assistant
 

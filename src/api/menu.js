@@ -46,3 +46,16 @@ export async function clearDinner(planDate) {
   if (error) throw error
 }
 
+// Step 18: which needed (Low / Out) items do the planned dinners use?
+// Returns a Map: item_id → [{ plan_date, recipeName }], in date order.
+export function neededByMenu(plan) {
+  const map = new Map()
+  for (const { plan_date, recipe } of plan) {
+    for (const ing of recipe.ingredients) {
+      if (ing.status === 'in') continue
+      if (!map.has(ing.item_id)) map.set(ing.item_id, [])
+      map.get(ing.item_id).push({ plan_date, recipeName: recipe.name })
+    }
+  }
+  return map
+}

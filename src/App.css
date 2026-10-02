@@ -937,3 +937,51 @@ div.empty p { margin: 0; }
    Put normal list behaviour back for the method. */
 .item-list .rich-text ul { list-style: disc; display: block; }
 .item-list .rich-text ol { list-style: decimal; display: block; }
+
+/* ---------- Generate a week (step 16) ---------- */
+.menu-actions { margin: 0 0 12px; padding: 0 16px; }
+.menu-actions .primary { width: 100%; justify-content: center; }
+
+.day-chips { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.day-chip {
+  position: relative;
+  height: 48px;
+  border: 1px solid #d6d3cc;
+  border-radius: 10px;
+  background: var(--surface);
+  font: 600 15px var(--mono);
+  color: var(--ink);
+  cursor: pointer;
+}
+.day-chip.is-on { background: var(--ink); border-color: var(--ink); color: var(--surface); }
+.day-chip:disabled { opacity: 0.35; cursor: default; }
+.day-chip-dot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.segmented { display: flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--track); }
+.segment {
+  flex: 1;
+  min-height: 40px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  font: 500 13px var(--sans);
+  white-space: nowrap;
+  color: var(--ink);
+  cursor: pointer;
+}
+.segment.is-on { background: var(--ink); color: var(--surface); }
+
+/* Several switches in one card, separated by lines */
+.toggle-group { display: flex; flex-direction: column; }
+.toggle-group .toggle-row { border-radius: 0; border-bottom-width: 0; }
+.toggle-group .toggle-row:first-child { border-radius: 12px 12px 0 0; }
+.toggle-group .toggle-row:last-child { border-radius: 0 0 12px 12px; border-bottom-width: 1px; }

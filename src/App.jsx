@@ -13,6 +13,7 @@ import RecipeForm from './components/RecipeForm.jsx'
 import RecipeDetail from './components/RecipeDetail.jsx'
 import MenuScreen from './components/MenuScreen.jsx'
 import MenuPick from './components/MenuPick.jsx'
+import MenuGenerate from './components/MenuGenerate.jsx'
 
 // App decides WHICH screen to show: setup problem, loading, sign-in, or one of the app's screens.
 export default function App() {
@@ -69,6 +70,7 @@ export default function App() {
       <Route path="/recipes/:id/edit" element={<RecipeForm />} />
       {/* :date is a day like 2026-10-06 */}
       <Route path="/menu/pick/:date" element={<MenuPick />} />
+      <Route path="/menu/generate" element={<MenuGenerate />} />
       {/* Any unknown address goes back to the Kitchen. */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

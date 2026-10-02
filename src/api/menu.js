@@ -41,6 +41,15 @@ export async function setDinner(planDate, recipeId) {
   if (error) throw error
 }
 
+// Save several days at once (the generator). One request = all saved, or none.
+// picks: [{ date, recipeId }]
+export async function setDinners(picks) {
+  if (picks.length === 0) return
+  const rows = picks.map((p) => ({ plan_date: p.date, meal: MEAL, recipe_id: p.recipeId }))
+  const { error } = await supabase.from('meal_plan').upsert(rows, { onConflict: 'plan_date,meal' })
+  if (error) throw error
+}
+
 export async function clearDinner(planDate) {
   const { error } = await supabase.from('meal_plan').delete().eq('plan_date', planDate).eq('meal', MEAL)
   if (error) throw error

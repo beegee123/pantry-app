@@ -1,6 +1,6 @@
 # Pantry App — Build Plan
 
-*Copied from the live Build Plan doc on 2026-09-30. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
+*Copied from the live Build Plan doc on 2026-10-02. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
 
 One app, built in three phases: pantry and shopping first, then recipes with photos, then a weekly menu with a generator. Each phase is usable on its own before the next starts.
 
@@ -13,12 +13,13 @@ One app, built in three phases: pantry and shopping first, then recipes with pho
 - **No exact quantity tracking.** In / Low / Out answers "can I cook this?" Salt, oil and water are assumed in stock.
 - **Photos:** one optional photo per recipe, your own. Letter placeholder when none.
 - **Menu generator:** rule-based from your own recipes first; AI suggestions come later.
+- **Categories:** kept in the database and managed on the Categories screen; the Kitchen shows its sections in that order.
 
 ## Stack and how we work
 
 - **Front end:** React, installed on your phone's home screen as a web app (no app store).
 - **Back end:** Supabase — Postgres database, file storage for photos, and sync between devices.
-- **Hosting:** Vercel.
+- **Hosting:** Vercel, which redeploys the app on every push to GitHub.
 - **How we work:** Claude writes the code one step at a time and explains each piece; you run it, follow along, and ask questions before moving on. You make every commit.
 - **Reference:** the wireframes in [`docs/wireframes/`](wireframes/) show every planned screen.
 
@@ -49,6 +50,7 @@ Quick wins on top of the live app, done in any order.
 - [ ] **Step 8c — Fingerprint / Face ID sign-in (passkeys).** On the Account screen, "Add fingerprint sign-in" saves a passkey; the sign-in screen gets a "Sign in with fingerprint / Face ID" button. Uses Supabase's passkey sign-in (beta, experimental API). Do it after the custom domain is set up: a passkey is tied to the web address, and changing the domain later invalidates it. Needs the Passkeys switch and domain entered under Authentication → Passkeys in Supabase.
 - [x] **Step 8d-1 — Categories table.** Categories move from the app's code into a `categories` table (name and display order), filled from the old list (with Meat & fish) plus any category already in use. Each item links to one (`category_id`); a category still in use can't be deleted. The Kitchen, item form and recipe form read the list and order from the database. The old text column stays for now, kept in step by a trigger, so saving by name (save_item, recipe imports) still works and an unknown name creates the category.
 - [x] **Step 8d-2 — Categories screen.** A Categories button next to Stores on the Kitchen opens a screen to add, rename, reorder (↑/↓) and remove categories; the Kitchen sections follow the order. Removing one that items use asks where to move them, then moves and removes in one go.
+- [ ] **Step 8d-3 — Retire the old category text.** Once nothing saves a category by name any more, switch `save_item` and the item form to `category_id`, then drop `items.category` and the trigger that keeps it in step.
 
 ## Phase 1.5 — Chat bot: Telegram and WhatsApp
 
@@ -84,6 +86,8 @@ Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recip
 - [x] **Step 13 — Photos.** One photo per recipe: take or choose one on the recipe screen, shrunk on the phone (longest side 1280 px, JPEG up to ~250 KB), uploaded to a private Supabase Storage bucket (`recipe-photos`, household only) and linked by `photo_path`. Thumbnails in the list, a large photo on the recipe screen with Change / Remove, letter placeholder when empty. Deleting a recipe deletes its photo.
 - [x] **Step 13a — Duplicate a recipe.** A Duplicate button on the recipe screen opens the form filled in from the original (named "… (copy)", favourite off, no photo). Change what's different and save; the original is untouched and nothing is saved until you press Save.
 
+Phase 2 is complete: recipes with live readiness, photos, duplicating and a rich-text method are all live.
+
 ## Phase 3 — Weekly menu & generator (v3)
 
 Screens: Weekly menu, Generate a week. Done when one button plans the week and fills the shopping list.
@@ -92,9 +96,11 @@ Screens: Weekly menu, Generate a week. Done when one button plans the week and f
 
 - [x] **Step 14 — MealPlan table.** One row per date and meal pointing to a recipe, plus a locked flag for step 17. One dinner per day; deleting a recipe removes it from the plan.
 - [x] **Step 15 — Weekly menu screen.** Menu tab: Monday to Sunday with ‹ › to move between weeks. Each day shows the recipe's thumbnail and readiness (tap to open it) and a Change button; empty days say "+ Pick a recipe". The picker lists dinners first, Ready first, with "Also Thu" on recipes already planned that week, and can clear the day.
-- [ ] **Step 16 — Generator.** Score each recipe (In +, Low −, Out −−, favourites +), apply the rules (no repeats, skip last week, long recipes on weekends), fill the chosen days.
+- [x] **Step 16 — Generator.** A Generate week button opens a screen with the days to fill (empty days from today on are ticked; ticking a planned day replaces it), a priority (Use what I have / Balanced / Don't care) and four rules: no repeats, avoid last week's dinners (used only if nothing fresher fits), favourites more often, and long recipes (over 45 min) on weekends only. Each dinner recipe is scored per day with a little randomness, the best one wins, and the picks are saved in one go. Days nothing fits stay empty and the Menu says why.
 - [ ] **Step 17 — Lock and re-roll.** Keep locked days; regenerate the rest.
 - [x] **Step 18 — Week to shopping list.** Out and Low items are already on the shopping list, so there's no button. Instead, the Menu screen shows "This week needs 2 items: Rice (Thu) · Tomato paste (Thu)" with a link to the list, and the Shopping list tags each item with the dinners that need it ("For Thu Jollof rice") and adds a This week chip covering the next 7 days.
+
+Phase 3a (steps 14, 15 and 18) and the generator (step 16) are complete. Next: lock and re-roll (step 17).
 
 ## Phase 3.5 — OpenClaw kitchen assistant
 
@@ -121,7 +127,7 @@ Starts after Phase 3, so there are recipes and menus to reason over. A second ch
 
 ## Data model
 
-Arrows point from a table to the one it references. The two linking tables (`item_stores`, `recipe_ingredients`) are the same many-to-many pattern as a junction object in Salesforce. All of these tables exist today (`meal_plan` from step 14).
+Arrows point from a table to the one it references. The two linking tables (`item_stores`, `recipe_ingredients`) are the same many-to-many pattern as a junction object in Salesforce. `categories` is a simple lookup: each item points to one category. All of these tables exist today (`meal_plan` from step 14).
 
 ```mermaid
 erDiagram

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import RecipeThumb from './RecipeThumb.jsx'
 import { fetchPlan, neededByMenu } from '../api/menu.js'
 import { getPhotoUrls } from '../api/photos.js'
@@ -64,6 +64,14 @@ function WeekNeeds({ plan, fromDate, title }) {
 
 export default function MenuScreen() {
   const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  const navigate = useNavigate()
+  // A one-time message from the generator ("Planned 5 dinners."), passed as navigation state.
+  const [message, setMessage] = useState(location.state?.message ?? null)
+  useEffect(() => {
+    // Clear it from the history entry, so a refresh or Back doesn't show it again.
+    if (location.state?.message) navigate(location.pathname + location.search, { replace: true, state: null })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- only on arrival
   // The week comes from the address (/menu?week=2026-10-05), so Back returns to the same week.
   const monday = startOfWeek(searchParams.get('week') ? fromISODate(searchParams.get('week')) : new Date())
   const mondayISO = toISODate(monday)
@@ -157,6 +165,23 @@ export default function MenuScreen() {
           </>
         )}
       </p>
+
+      {dates[6] >= todayISO && (
+        <div className="menu-actions">
+          <Link to={`/menu/generate?week=${mondayISO}`} className="primary primary-link">
+            Generate week
+          </Link>
+        </div>
+      )}
+
+      {message && (
+        <p className="notice notice-success notice-inline" role="status">
+          {message}{' '}
+          <button type="button" className="link-button" onClick={() => setMessage(null)}>
+            OK
+          </button>
+        </p>
+      )}
 
       {plan !== null && (
         <main className="item-list">

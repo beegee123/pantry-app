@@ -786,7 +786,6 @@ div.empty p { margin: 0; }
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 12px;
-  white-space: pre-wrap; /* keep the line breaks you typed */
   line-height: 1.5;
 }
 
@@ -889,3 +888,52 @@ div.empty p { margin: 0; }
 .move-items-box { flex-basis: 100%; margin-top: 4px; }
 /* Kitchen header: with Stores, Categories, + and Sign out, let the buttons wrap onto a second line. */
 .header-actions { flex-wrap: wrap; justify-content: flex-end; }
+
+/* ---------- Rich-text method (editor + recipe screen) ---------- */
+/* Shared look for formatted text: tidy paragraphs and lists. */
+.rich-text p,
+.method-editor-text p { margin: 0 0 8px; }
+.rich-text ol, .rich-text ul,
+.method-editor-text ol, .method-editor-text ul { margin: 0 0 8px; padding-left: 22px; }
+.rich-text li, .method-editor-text li { margin-bottom: 6px; }
+.rich-text li p, .method-editor-text li p { margin: 0; }
+.rich-text > :last-child, .method-editor-text > :last-child { margin-bottom: 0; }
+.rich-text li::marker, .method-editor-text li::marker { font-weight: 600; }
+
+.method-editor {
+  border: 1px solid #d6d3cc;
+  border-radius: 10px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.method-editor:focus-within { border-color: var(--ink); }
+.method-toolbar {
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  border-bottom: 1px solid var(--line);
+  background: #f6f5f1;
+}
+.method-tool {
+  min-width: 40px;
+  min-height: 36px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  font: 500 15px var(--sans);
+  color: var(--ink);
+  cursor: pointer;
+}
+.method-tool:hover { border-color: #d6d3cc; }
+.method-tool.is-on { background: var(--ink); color: var(--surface); }
+.method-editor-text {
+  min-height: 180px;
+  padding: 12px 14px;
+  font: 16px/1.5 var(--sans); /* 16px stops iPhones zooming in when you tap */
+  outline: none;
+}
+.method-editor--loading { min-height: 228px; padding: 12px 14px; color: var(--muted); }
+/* The recipe screen sits inside .item-list, whose own lists have no bullets and use gaps.
+   Put normal list behaviour back for the method. */
+.item-list .rich-text ul { list-style: disc; display: block; }
+.item-list .rich-text ol { list-style: decimal; display: block; }

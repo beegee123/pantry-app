@@ -4,6 +4,7 @@ import { fetchRecipe, mealLabel } from '../api/recipes.js'
 import { getPhotoUrls, setRecipePhoto, removeRecipePhoto } from '../api/photos.js'
 import { shrinkImage } from '../lib/image.js'
 import RecipeThumb from './RecipeThumb.jsx'
+import { cleanMethodHtml } from '../lib/methodHtml.js'
 import { subscribeToTables } from '../lib/realtime.js'
 import { readiness } from '../lib/readiness.js'
 
@@ -210,7 +211,8 @@ export default function RecipeDetail() {
         {recipe.method && (
           <section>
             <h2 className="section-title">METHOD</h2>
-            <p className="detail-method">{recipe.method}</p>
+            {/* The method is HTML from the editor, cleaned first (see methodHtml.js). */}
+            <div className="detail-method rich-text" dangerouslySetInnerHTML={{ __html: cleanMethodHtml(recipe.method) }} />
           </section>
         )}
       </main>

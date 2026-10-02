@@ -1,8 +1,13 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import IngredientPicker from './IngredientPicker.jsx'
 import { fetchRecipe, saveRecipe, deleteRecipe, MEAL_TYPES } from '../api/recipes.js'
 import { fetchItemOptions, saveItem } from '../api/items.js'
+
+// LAZY LOADING: the rich-text editor is big (it brings a whole editing engine), and only
+// this form needs it. lazy() splits it into its own file that downloads the first time
+// the form opens, so the Kitchen and the rest of the app load as fast as before.
+const MethodEditor = lazy(() => import('./MethodEditor.jsx'))
 
 const EMPTY_RECIPE = {
   name: '',
@@ -255,15 +260,14 @@ export default function RecipeForm() {
           />
         </label>
 
-        <label className="field">
-          <span className="field-label">Method</span>
-          <textarea
-            rows="8"
-            value={form.method}
-            onChange={(e) => setField('method', e.target.value)}
-            placeholder={'1. Fry the onions…\n2. Add the tomato paste…'}
-          />
-        </label>
+        <div className="field">
+          <label className="field-label" htmlFor="method">
+            Method <span className="field-hint">Type “1. ” for steps, “- ” for bullets</span>
+          </label>
+          <Suspense fallback={<div className="method-editor method-editor--loading">Loading editor…</div>}>
+            <MethodEditor id="method" value={form.method} onChange={(html) => setField('method', html)} />
+          </Suspense>
+        </div>
 
         {saveError && (
           <p className="notice" role="alert">

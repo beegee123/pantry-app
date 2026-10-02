@@ -77,6 +77,7 @@ Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recip
 
 - [x] **Step 11 — Readiness.** Work out Ready / Low / Missing for each recipe from its ingredients' live status; sort Ready first; search plus ★ Favourites and Under 30 min filters.
 - [x] **Step 12 — Recipe detail.** Ingredients with status, "Missing 2: already on your shopping list" (opens the list), assumed basics, method, and an Edit button.
+- [x] **Step 12a — Rich-text method.** The method box is a formatting editor (Tiptap): bold, italics, numbered and bulleted lists, with "1. " and "- " starting a list and Enter continuing it. Saved as HTML and cleaned (DOMPurify) before display. Older plain-text methods and recipe imports are shown as lists automatically. The editor loads only on the recipe form, so the rest of the app stays light.
 
 **2c — Photos**
 

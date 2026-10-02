@@ -10,6 +10,8 @@ import TabLayout from './components/TabLayout.jsx'
 import RecipesScreen from './components/RecipesScreen.jsx'
 import RecipeForm from './components/RecipeForm.jsx'
 import RecipeDetail from './components/RecipeDetail.jsx'
+import MenuScreen from './components/MenuScreen.jsx'
+import MenuPick from './components/MenuPick.jsx'
 
 // App decides WHICH screen to show: setup problem, loading, sign-in, or one of the app's screens.
 export default function App() {
@@ -53,6 +55,7 @@ export default function App() {
       <Route element={<TabLayout />}>
         <Route path="/" element={<KitchenScreen />} />
         <Route path="/recipes" element={<RecipesScreen />} />
+        <Route path="/menu" element={<MenuScreen />} />
         <Route path="/shopping" element={<ShoppingScreen />} />
       </Route>
       <Route path="/stores" element={<StoresScreen />} />
@@ -62,6 +65,8 @@ export default function App() {
       <Route path="/recipes/new" element={<RecipeForm />} />
       <Route path="/recipes/:id" element={<RecipeDetail />} />
       <Route path="/recipes/:id/edit" element={<RecipeForm />} />
+      {/* :date is a day like 2026-10-06 */}
+      <Route path="/menu/pick/:date" element={<MenuPick />} />
       {/* Any unknown address goes back to the Kitchen. */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -4,7 +4,7 @@ import { fetchNeededCount } from '../api/shopping.js'
 import { subscribeToTables } from '../lib/realtime.js'
 
 // A LAYOUT ROUTE: draws the bottom tab bar once, and <Outlet /> shows
-// whichever screen inside it is active (Kitchen, Recipes or Shopping).
+// whichever screen inside it is active (Kitchen, Recipes, Menu or Shopping).
 export default function TabLayout() {
   const [neededCount, setNeededCount] = useState(null)
 
@@ -30,6 +30,9 @@ export default function TabLayout() {
         </NavLink>
         <NavLink to="/recipes" className={tabClass}>
           Recipes
+        </NavLink>
+        <NavLink to="/menu" className={tabClass}>
+          Menu
         </NavLink>
         <NavLink to="/shopping" className={tabClass}>
           Shopping

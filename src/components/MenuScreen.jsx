@@ -1,0 +1,176 @@
+import { useEffect, useState } from 'react'
+import { Link, useSearchParams } from 'react-router'
+import RecipeThumb from './RecipeThumb.jsx'
+import { fetchPlan } from '../api/menu.js'
+import { getPhotoUrls } from '../api/photos.js'
+import { subscribeToTables } from '../lib/realtime.js'
+import { readiness } from '../lib/readiness.js'
+import {
+  addDays,
+  dayName,
+  dayNumber,
+  fromISODate,
+  startOfWeek,
+  toISODate,
+  today,
+  weekDates,
+  weekRangeLabel,
+} from '../lib/dates.js'
+
+// "This week", "Next week", "Last week", or "Week of Oct 12".
+function weekTitle(monday) {
+  const weeksAway = Math.round((monday - startOfWeek(new Date())) / (7 * 24 * 60 * 60 * 1000))
+  if (weeksAway === 0) return 'This week'
+  if (weeksAway === 1) return 'Next week'
+  if (weeksAway === -1) return 'Last week'
+  return `Week of ${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
+}
+
+export default function MenuScreen() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  // The week comes from the address (/menu?week=2026-10-05), so Back returns to the same week.
+  const monday = startOfWeek(searchParams.get('week') ? fromISODate(searchParams.get('week')) : new Date())
+  const mondayISO = toISODate(monday)
+  const dates = weekDates(monday)
+
+  const [plan, setPlan] = useState(null) // null = loading
+  const [photoUrls, setPhotoUrls] = useState({})
+  const [loadError, setLoadError] = useState(null)
+  const [reloadCount, setReloadCount] = useState(0)
+  const reload = () => setReloadCount((n) => n + 1)
+
+  useEffect(() => {
+    let ignore = false
+    setPlan(null)
+    fetchPlan(dates[0], dates[6])
+      .then((data) => {
+        if (ignore) return
+        setPlan(data)
+        setLoadError(null)
+        return getPhotoUrls(data.map((p) => p.recipe.photo_path))
+          .then((urls) => {
+            if (!ignore) setPhotoUrls(urls)
+          })
+          .catch(() => {})
+      })
+      .catch((err) => {
+        if (!ignore) setLoadError(err.message)
+      })
+    return () => {
+      ignore = true
+    }
+  }, [mondayISO, reloadCount]) // eslint-disable-line react-hooks/exhaustive-deps -- `dates` follows mondayISO
+
+  // Someone plans a dinner on another phone, or an ingredient's status changes → reload.
+  useEffect(
+    () => subscribeToTables('menu', ['meal_plan', 'items', 'recipes', 'recipe_ingredients'], reload),
+    [],
+  )
+
+  const goToWeek = (offsetWeeks) => setSearchParams({ week: toISODate(addDays(monday, offsetWeeks * 7)) })
+  const isThisWeek = mondayISO === toISODate(startOfWeek(new Date()))
+  const todayISO = today()
+
+  const header = (
+    <header className="screen-header">
+      <div>
+        <span className="eyebrow">{weekRangeLabel(monday)} · DINNERS</span>
+        <h1>{weekTitle(monday)}</h1>
+      </div>
+      <div className="week-nav">
+        <button type="button" className="small-button" onClick={() => goToWeek(-1)} aria-label="Previous week">
+          ‹
+        </button>
+        <button type="button" className="small-button" onClick={() => goToWeek(1)} aria-label="Next week">
+          ›
+        </button>
+      </div>
+    </header>
+  )
+
+  if (loadError) {
+    return (
+      <div className="screen">
+        {header}
+        <div className="center-message">
+          <p>Couldn’t load the menu.</p>
+          <p className="muted">{loadError}</p>
+          <button type="button" className="primary" onClick={reload}>
+            Try again
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  // plan_date → that day's planned dinner
+  const byDate = new Map((plan ?? []).map((p) => [p.plan_date, p]))
+  const plannedCount = byDate.size
+
+  return (
+    <div className="screen">
+      {header}
+      <p className="screen-subtitle">
+        {plan === null ? 'Loading…' : `${plannedCount} of 7 dinners planned`}
+        {!isThisWeek && (
+          <>
+            {' · '}
+            <button type="button" className="link-button" onClick={() => setSearchParams({})}>
+              Back to this week
+            </button>
+          </>
+        )}
+      </p>
+
+      {plan !== null && (
+        <main className="item-list">
+          <ul className="menu-days">
+            {dates.map((date) => {
+              const planned = byDate.get(date)
+              const isPast = date < todayISO
+              const dayClass = ['menu-day', date === todayISO && 'is-today', isPast && 'is-past'].filter(Boolean).join(' ')
+              const dayLabel = (
+                <span className="menu-date">
+                  <span>{dayName(date)}</span>
+                  <span>{dayNumber(date)}</span>
+                </span>
+              )
+
+              if (!planned) {
+                return (
+                  <li key={date} className={dayClass}>
+                    <Link to={`/menu/pick/${date}`} className="menu-row menu-row--empty">
+                      {dayLabel}
+                      <span className="menu-pick">+ Pick a recipe</span>
+                    </Link>
+                  </li>
+                )
+              }
+
+              const r = readiness(planned.recipe.ingredients.map((i) => i.status))
+              return (
+                <li key={date} className={dayClass}>
+                  <div className="menu-row">
+                    {dayLabel}
+                    <Link to={`/recipes/${planned.recipe.id}`} className="menu-recipe">
+                      <RecipeThumb name={planned.recipe.name} url={photoUrls[planned.recipe.photo_path]} />
+                      <span className="item-name">{planned.recipe.name}</span>
+                      <span className={`pill pill-${r.kind}`}>{r.label}</span>
+                    </Link>
+                    <Link
+                      to={`/menu/pick/${date}`}
+                      className="small-button menu-change"
+                      aria-label={`Change dinner for ${dayName(date)} ${dayNumber(date)}`}
+                    >
+                      Change
+                    </Link>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        </main>
+      )}
+    </div>
+  )
+}

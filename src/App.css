@@ -985,3 +985,18 @@ div.empty p { margin: 0; }
 .toggle-group .toggle-row { border-radius: 0; border-bottom-width: 0; }
 .toggle-group .toggle-row:first-child { border-radius: 12px 12px 0 0; }
 .toggle-group .toggle-row:last-child { border-radius: 0 0 12px 12px; border-bottom-width: 1px; }
+
+/* ---------- Recipe screen: tap an ingredient's status to cycle it ---------- */
+.detail-ingredients li { padding: 6px 8px 6px 12px; }
+/* The status pill, as a button: same look, bigger tap area, a hint that it's tappable */
+.pill-button {
+  min-width: 52px;
+  min-height: 34px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pill-button.pill-in { border-color: #d6d3cc; }
+.pill-button:active { transform: scale(0.95); }
+.detail-ing-text { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.detail-ing-text .detail-ing-name { flex-grow: 0; }

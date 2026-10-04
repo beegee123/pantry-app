@@ -1,6 +1,6 @@
 # Pantry App — Build Plan
 
-*Copied from the live Build Plan doc on 2026-10-02. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
+*Copied from the live Build Plan doc on 2026-10-03. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
 
 One app, built in three phases: pantry and shopping first, then recipes with photos, then a weekly menu with a generator. Each phase is usable on its own before the next starts.
 
@@ -80,6 +80,7 @@ Screens: Recipes tab, Recipe form, Recipe detail. Done when you can open a recip
 - [x] **Step 11 — Readiness.** Work out Ready / Low / Missing for each recipe from its ingredients' live status; sort Ready first; search plus ★ Favourites and Under 30 min filters.
 - [x] **Step 12 — Recipe detail.** Ingredients with status, "Missing 2: already on your shopping list" (opens the list), assumed basics, method, and an Edit button.
 - [x] **Step 12a — Rich-text method.** The method box is a formatting editor (Tiptap): bold, italics, numbered and bulleted lists, with "1. " and "- " starting a list and Enter continuing it. Saved as HTML and cleaned (DOMPurify) before display. Older plain-text methods and recipe imports are shown as lists automatically. The editor loads only on the recipe form, so the rest of the app stays light.
+- [x] **Step 12b — Update stock from the recipe.** Each ingredient's status pill on the recipe screen is a button: one tap moves it to the next status (In → Low → Out → In). It changes the pantry item itself, the readiness card updates at once, and a failed save puts it back with a message.
 
 **2c — Photos**
 

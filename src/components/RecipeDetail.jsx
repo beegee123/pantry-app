@@ -4,11 +4,16 @@ import { fetchRecipe, mealLabel } from '../api/recipes.js'
 import { getPhotoUrls, setRecipePhoto, removeRecipePhoto } from '../api/photos.js'
 import { shrinkImage } from '../lib/image.js'
 import RecipeThumb from './RecipeThumb.jsx'
+import { saveItemStatus } from '../api/items.js'
 import { cleanMethodHtml } from '../lib/methodHtml.js'
 import { subscribeToTables } from '../lib/realtime.js'
 import { readiness } from '../lib/readiness.js'
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
+
+// One tap moves an ingredient to the next status, round in a circle: In → Low → Out → In.
+const NEXT_STATUS = { in: 'low', low: 'out', out: 'in' }
+const STATUS_LABEL = { in: 'In', low: 'Low', out: 'Out' }
 
 // The summary card under the title.
 function ReadinessCard({ r }) {
@@ -40,6 +45,7 @@ export default function RecipeDetail() {
   const [photoUrl, setPhotoUrl] = useState(null)
   const [photoBusy, setPhotoBusy] = useState(false)
   const [photoError, setPhotoError] = useState(null)
+  const [statusError, setStatusError] = useState(null)
   const fileInput = useRef(null) // the hidden file picker; the button "clicks" it
 
   useEffect(() => {
@@ -77,6 +83,25 @@ export default function RecipeDetail() {
       ignore = true
     }
   }, [photoPath])
+
+  // Tap In / Low / Out on an ingredient: the same pantry item the Kitchen shows.
+  // OPTIMISTIC, like the Kitchen: change it on screen straight away (the readiness card
+  // follows, because it's worked out from these statuses), then save; undo if saving fails.
+  async function updateIngredientStatus(ing, newStatus) {
+    const setStatus = (status) =>
+      setRecipe((current) => ({
+        ...current,
+        ingredients: current.ingredients.map((i) => (i.item_id === ing.item_id ? { ...i, status } : i)),
+      }))
+    setStatus(newStatus)
+    setStatusError(null)
+    try {
+      await saveItemStatus(ing.item_id, newStatus)
+    } catch {
+      setStatus(ing.status)
+      setStatusError(`Couldn’t save ${ing.name}. Check your connection and try again.`)
+    }
+  }
 
   // Shared by "Add / Change photo" and "Remove photo": busy flag, error message, reload.
   async function runPhotoAction(action) {
@@ -199,12 +224,27 @@ export default function RecipeDetail() {
           <ul className="detail-ingredients">
             {recipe.ingredients.map((ing) => (
               <li key={ing.item_id}>
-                <span className="detail-ing-name">{ing.name}</span>
-                <span className="detail-ing-amount">{ing.amount_text}</span>
-                <span className={`pill pill-${ing.status}`}>{ing.status.toUpperCase()}</span>
+                <span className="detail-ing-text">
+                  <span className="detail-ing-name">{ing.name}</span>
+                  {ing.amount_text && <span className="detail-ing-amount">{ing.amount_text}</span>}
+                </span>
+                {/* One button: tap to cycle the pantry item's status (changes it everywhere). */}
+                <button
+                  type="button"
+                  className={`pill pill-${ing.status} pill-button`}
+                  aria-label={`${ing.name}: ${STATUS_LABEL[ing.status]}. Tap for ${STATUS_LABEL[NEXT_STATUS[ing.status]]}`}
+                  onClick={() => updateIngredientStatus(ing, NEXT_STATUS[ing.status])}
+                >
+                  {ing.status.toUpperCase()}
+                </button>
               </li>
             ))}
           </ul>
+          {statusError && (
+            <p className="notice notice-inline" role="alert">
+              {statusError}
+            </p>
+          )}
           {recipe.basics && <p className="muted small detail-basics">Assumed in stock: {recipe.basics}</p>}
         </section>
 

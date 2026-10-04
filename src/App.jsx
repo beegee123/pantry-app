@@ -5,6 +5,7 @@ import SignIn from './components/SignIn.jsx'
 import KitchenScreen from './components/KitchenScreen.jsx'
 import StoresScreen from './components/StoresScreen.jsx'
 import CategoriesScreen from './components/CategoriesScreen.jsx'
+import HelpScreen from './components/HelpScreen.jsx'
 import ItemForm from './components/ItemForm.jsx'
 import ShoppingScreen from './components/ShoppingScreen.jsx'
 import TabLayout from './components/TabLayout.jsx'
@@ -62,6 +63,7 @@ export default function App() {
       </Route>
       <Route path="/stores" element={<StoresScreen />} />
       <Route path="/categories" element={<CategoriesScreen />} />
+      <Route path="/help" element={<HelpScreen />} />
       <Route path="/items/new" element={<ItemForm />} />
       {/* :id is a placeholder — /items/abc123 shows the form for item abc123 */}
       <Route path="/items/:id" element={<ItemForm />} />

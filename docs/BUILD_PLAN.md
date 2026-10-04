@@ -1,6 +1,6 @@
 # Pantry App — Build Plan
 
-*Copied from the live Build Plan doc on 2026-10-03. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
+*Copied from the live Build Plan doc on 2026-10-04. The live doc is where progress is ticked off; this copy is a snapshot kept with the code.*
 
 One app, built in three phases: pantry and shopping first, then recipes with photos, then a weekly menu with a generator. Each phase is usable on its own before the next starts.
 
@@ -51,6 +51,7 @@ Quick wins on top of the live app, done in any order.
 - [x] **Step 8d-1 — Categories table.** Categories move from the app's code into a `categories` table (name and display order), filled from the old list (with Meat & fish) plus any category already in use. Each item links to one (`category_id`); a category still in use can't be deleted. The Kitchen, item form and recipe form read the list and order from the database. The old text column stays for now, kept in step by a trigger, so saving by name (save_item, recipe imports) still works and an unknown name creates the category.
 - [x] **Step 8d-2 — Categories screen.** A Categories button next to Stores on the Kitchen opens a screen to add, rename, reorder (↑/↓) and remove categories; the Kitchen sections follow the order. Removing one that items use asks where to move them, then moves and removes in one go.
 - [x] **Step 8d-3 — Retire the old category text.** Switched `save_item`, the item form and the recipe form's new-ingredient box to `category_id`, then dropped `items.category` and the triggers that kept it in step. Items now link to their category only; recipe imports find a category by name with category_id_for.
+- [x] **User guide.** A Help screen, opened from a ? button on the Kitchen, with tap-to-open sections: the basics (In / Low / Out), Kitchen, Shopping, Recipes, Menu and Tips. Keep it updated as features change.
 
 ## Phase 1.5 — Chat bot: Telegram and WhatsApp
 

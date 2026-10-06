@@ -50,6 +50,22 @@ export async function setDinners(picks) {
   if (error) throw error
 }
 
+// Rearrange (step 16a): move a dinner to another day of the week.
+// If that day already has a dinner, the two swap: one upsert saves both days together.
+// If it's empty, the dinner is saved on the new day first, then removed from the old one
+// (so a failure halfway leaves it on both days, never on neither).
+export async function moveDinner(fromDate, toDate, fromRecipeId, toRecipeId) {
+  if (toRecipeId) {
+    await setDinners([
+      { date: toDate, recipeId: fromRecipeId },
+      { date: fromDate, recipeId: toRecipeId },
+    ])
+  } else {
+    await setDinner(toDate, fromRecipeId)
+    await clearDinner(fromDate)
+  }
+}
+
 export async function clearDinner(planDate) {
   const { error } = await supabase.from('meal_plan').delete().eq('plan_date', planDate).eq('meal', MEAL)
   if (error) throw error

@@ -873,6 +873,26 @@ div.empty p { margin: 0; }
 .menu-recipe .item-name { flex: 1; min-width: 0; }
 .menu-change { flex: none; }
 
+/* Rearrange mode (step 16a): each day is a button; the picked one is dark, the others invite a drop */
+.rearrange-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 16px 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--ink);
+  color: var(--surface);
+  font-size: 14px;
+}
+.rearrange-bar .small-button { flex: none; }
+.menu-row--button { width: 100%; text-align: left; font: inherit; cursor: pointer; }
+.menu-row--button:disabled { cursor: default; }
+.menu-row--button.is-picked { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink); }
+.menu-row--button.is-target { border-style: dashed; border-color: var(--muted); }
+.menu-row--button.is-target.menu-row--empty .menu-pick { color: var(--ink); font-weight: 500; }
+
 .week-needs { margin-top: 16px; }
 .week-needs-list { margin: 4px 0 8px; color: var(--muted); font-size: 14px; line-height: 1.5; }
 

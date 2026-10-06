@@ -142,6 +142,10 @@ export default function HelpScreen() {
             </li>
             <li>Tap a planned recipe to open it.</li>
             <li>
+              <strong>Rearrange</strong> (next to the dinner count) moves dinners between days: tap a dinner, then
+              the day you want it on. If that day has a dinner, the two swap. Tap <strong>Done</strong> when finished.
+            </li>
+            <li>
               The card below the week lists what the remaining dinners still need. Those items are already on the
               Shopping list.
             </li>

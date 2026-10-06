@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import RecipeThumb from './RecipeThumb.jsx'
-import { fetchPlan, neededByMenu } from '../api/menu.js'
+import { fetchPlan, moveDinner, neededByMenu } from '../api/menu.js'
 import { getPhotoUrls } from '../api/photos.js'
 import { subscribeToTables } from '../lib/realtime.js'
 import { readiness } from '../lib/readiness.js'
@@ -83,9 +83,13 @@ export default function MenuScreen() {
   const [reloadCount, setReloadCount] = useState(0)
   const reload = () => setReloadCount((n) => n + 1)
 
+  // Rearrange mode (step 16a): tap a dinner, then the day to move it to.
+  const [rearranging, setRearranging] = useState(false)
+  const [picked, setPicked] = useState(null) // the date of the dinner being moved
+  const [moveError, setMoveError] = useState(null)
+
   useEffect(() => {
     let ignore = false
-    setPlan(null)
     fetchPlan(dates[0], dates[6])
       .then((data) => {
         if (ignore) return
@@ -104,6 +108,13 @@ export default function MenuScreen() {
       ignore = true
     }
   }, [mondayISO, reloadCount]) // eslint-disable-line react-hooks/exhaustive-deps -- `dates` follows mondayISO
+
+  // A different week: show Loading… and leave rearrange mode.
+  useEffect(() => {
+    setPlan(null)
+    setRearranging(false)
+    setPicked(null)
+  }, [mondayISO])
 
   // Someone plans a dinner on another phone, or an ingredient's status changes → reload.
   useEffect(
@@ -150,13 +161,61 @@ export default function MenuScreen() {
   // plan_date → that day's planned dinner
   const byDate = new Map((plan ?? []).map((p) => [p.plan_date, p]))
   const plannedCount = byDate.size
+  const weekIsOver = dates[6] < todayISO
+  const canRearrange = !weekIsOver && [...byDate.keys()].some((d) => d >= todayISO)
+
+  function stopRearranging() {
+    setRearranging(false)
+    setPicked(null)
+    setMoveError(null)
+  }
+
+  // In rearrange mode, a tap on a day: pick up its dinner, put it down, or drop the pick.
+  async function tapDay(date) {
+    if (picked === null) {
+      if (byDate.has(date)) setPicked(date)
+      return
+    }
+    if (picked === date) {
+      setPicked(null)
+      return
+    }
+    const from = byDate.get(picked)
+    const to = byDate.get(date) ?? null
+    setPicked(null)
+    setMoveError(null)
+
+    // Show the result straight away; put it back if saving fails.
+    const before = plan
+    setPlan(
+      plan
+        .filter((p) => p.plan_date !== picked && p.plan_date !== date)
+        .concat([{ ...from, plan_date: date }], to ? [{ ...to, plan_date: picked }] : [])
+        .sort((a, b) => a.plan_date.localeCompare(b.plan_date)),
+    )
+    try {
+      await moveDinner(picked, date, from.recipe.id, to?.recipe.id ?? null)
+    } catch (err) {
+      setPlan(before)
+      setMoveError(`Couldn’t move it: ${err.message}`)
+      reload()
+    }
+  }
 
   return (
     <div className="screen">
       {header}
       <p className="screen-subtitle">
         {plan === null ? 'Loading…' : `${plannedCount} of 7 dinners planned`}
-        {!isThisWeek && (
+        {canRearrange && !rearranging && (
+          <>
+            {' · '}
+            <button type="button" className="link-button" onClick={() => setRearranging(true)}>
+              Rearrange
+            </button>
+          </>
+        )}
+        {!isThisWeek && !rearranging && (
           <>
             {' · '}
             <button type="button" className="link-button" onClick={() => setSearchParams({})}>
@@ -166,7 +225,21 @@ export default function MenuScreen() {
         )}
       </p>
 
-      {dates[6] >= todayISO && (
+      {rearranging && (
+        <div className="rearrange-bar" role="status">
+          <span>{picked ? `Now tap the day to move ${shortDay(picked)}’s dinner to.` : 'Tap a dinner, then the day to move it to.'}</span>
+          <button type="button" className="small-button" onClick={stopRearranging}>
+            Done
+          </button>
+        </div>
+      )}
+      {moveError && (
+        <p className="notice notice-inline" role="alert">
+          {moveError}
+        </p>
+      )}
+
+      {!weekIsOver && !rearranging && (
         <div className="menu-actions">
           <Link to={`/menu/generate?week=${mondayISO}`} className="primary primary-link">
             Generate week
@@ -174,7 +247,7 @@ export default function MenuScreen() {
         </div>
       )}
 
-      {message && (
+      {message && !rearranging && (
         <p className="notice notice-success notice-inline" role="status">
           {message}{' '}
           <button type="button" className="link-button" onClick={() => setMessage(null)}>
@@ -185,7 +258,7 @@ export default function MenuScreen() {
 
       {plan !== null && (
         <main className="item-list">
-          <ul className="menu-days">
+          <ul className={rearranging ? 'menu-days is-rearranging' : 'menu-days'}>
             {dates.map((date) => {
               const planned = byDate.get(date)
               const isPast = date < todayISO
@@ -196,6 +269,46 @@ export default function MenuScreen() {
                   <span>{dayNumber(date)}</span>
                 </span>
               )
+
+              if (rearranging) {
+                // Every day becomes one big button. Past days stay put.
+                const r = planned && readiness(planned.recipe.ingredients.map((i) => i.status))
+                const canTap = !isPast && (picked !== null || Boolean(planned))
+                const rowClass = [
+                  'menu-row',
+                  'menu-row--button',
+                  !planned && 'menu-row--empty',
+                  picked === date && 'is-picked',
+                  picked !== null && picked !== date && !isPast && 'is-target',
+                ]
+                  .filter(Boolean)
+                  .join(' ')
+                const longDay = fromISODate(date).toLocaleDateString('en-US', { weekday: 'long' })
+                const label = planned ? `${longDay}: ${planned.recipe.name}` : `${longDay}: no dinner`
+                return (
+                  <li key={date} className={dayClass}>
+                    <button
+                      type="button"
+                      className={rowClass}
+                      disabled={!canTap}
+                      aria-pressed={picked === date}
+                      aria-label={label}
+                      onClick={() => tapDay(date)}
+                    >
+                      {dayLabel}
+                      {planned ? (
+                        <span className="menu-recipe">
+                          <RecipeThumb name={planned.recipe.name} url={photoUrls[planned.recipe.photo_path]} />
+                          <span className="item-name">{planned.recipe.name}</span>
+                          <span className={`pill pill-${r.kind}`}>{r.label}</span>
+                        </span>
+                      ) : (
+                        <span className="menu-pick">{picked && !isPast ? 'Move here' : 'No dinner'}</span>
+                      )}
+                    </button>
+                  </li>
+                )
+              }
 
               if (!planned) {
                 return (
@@ -232,7 +345,7 @@ export default function MenuScreen() {
           </ul>
 
           {/* Past days don't need shopping: count from today in the current week; skip weeks that are over. */}
-          {dates[6] >= todayISO && (
+          {!weekIsOver && !rearranging && (
             <WeekNeeds
               plan={plan}
               fromDate={isThisWeek ? todayISO : dates[0]}

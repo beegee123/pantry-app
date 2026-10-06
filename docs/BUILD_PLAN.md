@@ -99,10 +99,11 @@ Screens: Weekly menu, Generate a week. Done when one button plans the week and f
 - [x] **Step 14 — MealPlan table.** One row per date and meal pointing to a recipe, plus a locked flag for step 17. One dinner per day; deleting a recipe removes it from the plan.
 - [x] **Step 15 — Weekly menu screen.** Menu tab: Monday to Sunday with ‹ › to move between weeks. Each day shows the recipe's thumbnail and readiness (tap to open it) and a Change button; empty days say "+ Pick a recipe". The picker lists dinners first, Ready first, with "Also Thu" on recipes already planned that week, and can clear the day.
 - [x] **Step 16 — Generator.** A Generate week button opens a screen with the days to fill (empty days from today on are ticked; ticking a planned day replaces it), a priority (Use what I have / Balanced / Don't care) and four rules: no repeats, avoid last week's dinners (used only if nothing fresher fits), favourites more often, and long recipes (over 45 min) on weekends only. Each dinner recipe is scored per day with a little randomness, the best one wins, and the picks are saved in one go. Days nothing fits stay empty and the Menu says why.
+- [x] **Step 16a — Rearrange the week.** A small Rearrange link next to the dinner count turns the week into tap targets: tap a dinner, then the day to move it to. An empty day takes it; a planned day swaps with it (both saved in one request). Past days stay put, failed saves snap back, and Done returns to the normal, uncluttered view.
 - [ ] **Step 17 — Lock and re-roll.** Keep locked days; regenerate the rest.
 - [x] **Step 18 — Week to shopping list.** Out and Low items are already on the shopping list, so there's no button. Instead, the Menu screen shows "This week needs 2 items: Rice (Thu) · Tomato paste (Thu)" with a link to the list, and the Shopping list tags each item with the dinners that need it ("For Thu Jollof rice") and adds a This week chip covering the next 7 days.
 
-Phase 3a (steps 14, 15 and 18) and the generator (step 16) are complete. Next: lock and re-roll (step 17).
+Phase 3a (steps 14, 15 and 18), the generator (step 16) and rearranging (step 16a) are complete. Next: lock and re-roll (step 17).
 
 ## Phase 3.5 — OpenClaw kitchen assistant
 

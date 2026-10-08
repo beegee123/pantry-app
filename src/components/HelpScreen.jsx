@@ -45,10 +45,6 @@ export default function HelpScreen() {
             <li>Tap In, Low or Out next to an item to change it.</li>
             <li>Tap an item’s name to edit it: name, usual amount, category, stores, or delete it.</li>
             <li>
-              On an item, <strong>‹ ›</strong> at the top step to the previous or next item in the Kitchen list (as
-              filtered), saving any change first. Handy for reviewing items one after another.
-            </li>
-            <li>
               <strong>Search</strong> narrows the list as you type. If nothing matches, tap “+ Add … as a new
               item” to create it with the name filled in.
             </li>

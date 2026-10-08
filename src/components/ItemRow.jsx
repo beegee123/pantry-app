@@ -13,14 +13,12 @@ function storeLabel(stores) {
 // Props:
 //   item           — the item to show
 //   onStatusChange — function(itemId, newStatus), provided by App
-//   reviewList     — the Kitchen's visible items in order [{ id, name }], handed to the edit
-//                    screen so its ‹ › arrows can step through them (step 8e)
-export default function ItemRow({ item, onStatusChange, reviewList }) {
+export default function ItemRow({ item, onStatusChange }) {
   return (
     <li className="item-row">
       <div className="item-text">
         {/* Tap the name to edit the item. */}
-        <Link to={`/items/${item.id}`} state={{ reviewList }} className="item-name item-link">
+        <Link to={`/items/${item.id}`} className="item-name item-link">
           {item.name}
         </Link>
         <span className="item-store">{storeLabel(item.stores)}</span>

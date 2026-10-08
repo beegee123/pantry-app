@@ -818,6 +818,10 @@ div.empty p { margin: 0; }
 
 /* ---------- Duplicate recipe ---------- */
 .detail-actions { display: flex; gap: 8px; }
+/* Step 8f: ‹ › before Duplicate / Edit, set a little apart from them */
+.recipe-stepper { display: flex; gap: 6px; margin-right: 6px; }
+.stepper-button { min-width: 40px; justify-content: center; font-size: 18px; }
+.stepper-button:disabled { opacity: 0.35; cursor: default; }
 .copy-hint {
   margin: 0;
   padding: 10px 12px;

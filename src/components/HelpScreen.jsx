@@ -113,6 +113,10 @@ export default function HelpScreen() {
           <p>On a recipe:</p>
           <ul>
             <li>
+              <strong>‹ ›</strong> at the top go to the previous or next recipe in the Recipes list (as searched or
+              filtered), without going back to the list.
+            </li>
+            <li>
               Tap an ingredient’s <strong>status</strong> to change it: In → Low → Out → In. It changes the pantry
               item everywhere.
             </li>

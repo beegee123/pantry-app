@@ -106,6 +106,9 @@ export default function RecipesScreen() {
     .filter((r) => search === '' || normalize(r.name).includes(search))
     .sort(compareByReadiness)
 
+  // The list as shown (search, chip and order), handed to the recipe page for its ‹ › arrows (step 8f).
+  const reviewList = visible.map((r) => ({ id: r.id, name: r.name }))
+
   const readyCount = recipes.filter((r) => readiness(r.ingredientStatuses).kind === 'ready').length
 
   return (
@@ -144,7 +147,7 @@ export default function RecipesScreen() {
             <ul>
               {visible.map((recipe) => (
                 <li key={recipe.id}>
-                  <Link to={`/recipes/${recipe.id}`} className="item-row recipe-row">
+                  <Link to={`/recipes/${recipe.id}`} state={{ reviewList }} className="item-row recipe-row">
                     <RecipeThumb name={recipe.name} url={photoUrls[recipe.photo_path]} />
                     <div className="item-text">
                       <span className="item-name">

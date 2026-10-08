@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import { fetchRecipe, mealLabel } from '../api/recipes.js'
 import { getPhotoUrls, setRecipePhoto, removeRecipePhoto } from '../api/photos.js'
 import { shrinkImage } from '../lib/image.js'
@@ -47,6 +47,21 @@ export default function RecipeDetail() {
   const [photoError, setPhotoError] = useState(null)
   const [statusError, setStatusError] = useState(null)
   const fileInput = useRef(null) // the hidden file picker; the button "clicks" it
+
+  // Step 8f: opened from the Recipes list, the page gets that list (as searched / filtered,
+  // in its order) so ‹ › can go to the previous / next recipe without going back.
+  const location = useLocation()
+  const navigate = useNavigate()
+  const reviewList = location.state?.reviewList ?? null
+
+  // Moving to another recipe reuses this screen: start it fresh, at the top.
+  useEffect(() => {
+    setRecipe(undefined)
+    setLoadError(null)
+    setStatusError(null)
+    setPhotoError(null)
+    window.scrollTo(0, 0)
+  }, [id])
 
   useEffect(() => {
     let ignore = false
@@ -144,6 +159,36 @@ export default function RecipeDetail() {
     </Link>
   )
 
+  // Where this recipe sits in the Recipes list, and its neighbours.
+  const position = reviewList ? reviewList.findIndex((x) => x.id === id) : -1
+  const prev = position > 0 ? reviewList[position - 1] : null
+  const next = position >= 0 && position < reviewList.length - 1 ? reviewList[position + 1] : null
+  // replace: Back still returns to the Recipes list, not through every recipe you stepped past.
+  const goTo = (target) => navigate(`/recipes/${target.id}`, { state: { reviewList }, replace: true })
+  const stepper =
+    position >= 0 && reviewList.length > 1 ? (
+      <nav className="recipe-stepper" aria-label="Step through recipes">
+        <button
+          type="button"
+          className="small-button stepper-button"
+          disabled={!prev}
+          onClick={() => goTo(prev)}
+          aria-label={prev ? `Previous recipe: ${prev.name}` : 'No previous recipe'}
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          className="small-button stepper-button"
+          disabled={!next}
+          onClick={() => goTo(next)}
+          aria-label={next ? `Next recipe: ${next.name}` : 'No next recipe'}
+        >
+          ›
+        </button>
+      </nav>
+    ) : null
+
   if (loadError || recipe === null) {
     return (
       <div className="screen">
@@ -159,7 +204,12 @@ export default function RecipeDetail() {
   if (recipe === undefined) {
     return (
       <div className="screen">
-        <header className="screen-header screen-header--sub">{back}</header>
+        <header className="screen-header screen-header--sub">
+          <div className="detail-topbar">
+            {back}
+            {stepper}
+          </div>
+        </header>
         <p className="center-message muted">Loading…</p>
       </div>
     )
@@ -176,6 +226,7 @@ export default function RecipeDetail() {
         <div className="detail-topbar">
           {back}
           <div className="detail-actions">
+            {stepper}
             {/* Opens the New recipe form filled in from this one. */}
             <Link to={`/recipes/new?from=${recipe.id}`} className="small-button">
               Duplicate

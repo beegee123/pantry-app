@@ -150,6 +150,9 @@ export default function KitchenScreen() {
     ...Object.keys(groups).filter((c) => !categoryOrder.includes(c)), // anything else (e.g. still loading) at the end
   ]
 
+  // The items in the order they're shown (category by category), for the edit screen's ‹ › arrows.
+  const reviewList = categories.flatMap((c) => groups[c].map((i) => ({ id: i.id, name: i.name })))
+
   return (
     <div className="screen">
       <header className="screen-header">
@@ -210,7 +213,7 @@ export default function KitchenScreen() {
             <h2 className="section-title">{category.toUpperCase()}</h2>
             <ul>
               {groups[category].map((item) => (
-                <ItemRow key={item.id} item={item} onStatusChange={updateStatus} />
+                <ItemRow key={item.id} item={item} onStatusChange={updateStatus} reviewList={reviewList} />
               ))}
             </ul>
           </section>

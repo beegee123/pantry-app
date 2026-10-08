@@ -329,6 +329,11 @@ body {
 .form-header .back-link { padding: 0 8px; }
 .form-header-spacer { width: 64px; }
 
+/* Step 8e: ‹ › in the Edit item header, in place of the spacer (same width, so the title stays centred) */
+.item-stepper { display: flex; gap: 6px; width: 88px; justify-content: flex-end; }
+.stepper-button { min-width: 40px; justify-content: center; font-size: 18px; }
+.stepper-button:disabled { opacity: 0.35; cursor: default; }
+
 .item-form {
   display: flex;
   flex-direction: column;

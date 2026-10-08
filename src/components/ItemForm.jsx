@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams, useSearchParams } from 'react-router'
 import StatusControl from './StatusControl.jsx'
 import { fetchItem, saveItem, deleteItem } from '../api/items.js'
 import { fetchStoreOptions } from '../api/stores.js'
@@ -25,7 +25,13 @@ export default function ItemForm() {
   const [searchParams] = useSearchParams() // e.g. /items/new?name=Oat%20milk from the Kitchen search
   const startName = searchParams.get('name') ?? ''
 
+  // Step 8e: opened from the Kitchen, the screen gets the Kitchen's list (as it was filtered)
+  // so ‹ › can step to the previous / next item without going back.
+  const location = useLocation()
+  const reviewList = location.state?.reviewList ?? null
+
   const [form, setForm] = useState(null) // null = loading
+  const [original, setOriginal] = useState(null) // the item as loaded, to tell if anything changed
   const [stores, setStores] = useState([])
   const [loadError, setLoadError] = useState(null)
   const [notFound, setNotFound] = useState(false)
@@ -35,12 +41,22 @@ export default function ItemForm() {
   // Load the store list and, when editing, the item — at the same time.
   useEffect(() => {
     let ignore = false
+    // Moving to another item (‹ ›) reuses this screen: start from a clean slate.
+    setForm(null)
+    setOriginal(null)
+    setNotFound(false)
+    setSaveError(null)
+    setBusy(false)
+    window.scrollTo(0, 0)
     Promise.all([fetchStoreOptions(), isNew ? null : fetchItem(id)])
       .then(([storeList, item]) => {
         if (ignore) return
         setStores(storeList)
         if (isNew) setForm({ ...EMPTY_ITEM, name: startName })
-        else if (item) setForm(item)
+        else if (item) {
+          setForm(item)
+          setOriginal(item)
+        }
         else setNotFound(true)
       })
       .catch((err) => {
@@ -95,6 +111,27 @@ export default function ItemForm() {
     }
   }
 
+  // ‹ › : save first if anything changed, then open the neighbouring item (same list, same order).
+  async function goTo(target) {
+    const changed = JSON.stringify(form) !== JSON.stringify(original)
+    if (changed) {
+      if (!form.name.trim()) {
+        setSaveError('Give the item a name.')
+        return
+      }
+      setBusy(true)
+      setSaveError(null)
+      try {
+        await saveItem({ ...form, id, category_id: form.category_id ?? defaultCategoryId(categories) })
+      } catch (err) {
+        setSaveError(err.message)
+        setBusy(false)
+        return
+      }
+    }
+    navigate(`/items/${target.id}`, { state: { reviewList }, replace: true })
+  }
+
   async function handleDelete() {
     if (!window.confirm(`Delete ${form.name}? This can’t be undone.`)) return
     setBusy(true)
@@ -108,13 +145,42 @@ export default function ItemForm() {
     }
   }
 
+  // Where this item sits in the Kitchen list, and its neighbours.
+  const position = !isNew && reviewList ? reviewList.findIndex((i) => i.id === id) : -1
+  const prev = position > 0 ? reviewList[position - 1] : null
+  const next = position >= 0 && position < reviewList.length - 1 ? reviewList[position + 1] : null
+  // Just two arrows in the header's right corner (step 8e); nothing when there's nowhere to go.
+  const stepper =
+    position >= 0 && reviewList.length > 1 ? (
+      <nav className="item-stepper" aria-label="Step through items">
+        <button
+          type="button"
+          className="small-button stepper-button"
+          disabled={!prev || busy || form === null}
+          onClick={() => goTo(prev)}
+          aria-label={prev ? `Previous item: ${prev.name}` : 'No previous item'}
+        >
+          ‹
+        </button>
+        <button
+          type="button"
+          className="small-button stepper-button"
+          disabled={!next || busy || form === null}
+          onClick={() => goTo(next)}
+          aria-label={next ? `Next item: ${next.name}` : 'No next item'}
+        >
+          ›
+        </button>
+      </nav>
+    ) : null
+
   const header = (
     <header className="form-header">
       <Link to="/" className="back-link">
         Cancel
       </Link>
       <h1>{isNew ? 'Add item' : 'Edit item'}</h1>
-      <span className="form-header-spacer" />
+      {stepper ?? <span className="form-header-spacer" />}
     </header>
   )
 

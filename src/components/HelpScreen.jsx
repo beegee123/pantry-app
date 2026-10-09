@@ -78,8 +78,10 @@ export default function HelpScreen() {
               items another store sells too. <strong>Any store</strong> is for items with no store picked.
             </li>
             <li>
-              <strong>This week</strong> shows only what the planned dinners for the next 7 days need. Those items
-              also say which dinner they’re for (“For Thu Jollof rice”).
+              <strong>This week</strong> (today to Sunday) and <strong>Next week</strong> (Monday to Sunday) show only
+              what those weeks’ planned dinners need, the same weeks as the Menu tab. Those items also say which
+              dinner they’re for (“For Thu Jollof rice”; next week’s add the date, “For Tue 13 …”). An item both
+              weeks need is in both chips, but it’s one item: tick it once.
             </li>
             <li>Tick items as they go in the cart.</li>
             <li>

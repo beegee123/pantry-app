@@ -3,10 +3,11 @@ import { useSearchParams } from 'react-router'
 import { fetchShoppingList, setInCart, finishTrip } from '../api/shopping.js'
 import { subscribeToTables } from '../lib/realtime.js'
 import { fetchPlan, neededByMenu } from '../api/menu.js'
-import { addDays, shortDay, today, toISODate } from '../lib/dates.js'
+import { addDays, dayNumber, shortDay, startOfWeek, today, toISODate } from '../lib/dates.js'
 
 const ANY_STORE = 'any'
-const MENU = 'menu' // the "This week" chip: items the planned dinners need
+const MENU = 'menu' // the "This week" chip: items this week's planned dinners need (today → Sunday)
+const NEXT = 'next' // the "Next week" chip: items next week's dinners need (Monday → Sunday)
 
 // Decide which store heading each item goes under:
 //   its preferred store → else its first store (A–Z) → else "Any store".
@@ -81,7 +82,21 @@ function rowDetails(item) {
 }
 
 // Step 18: "For Tue Jollof rice, Thu Fried rice" — which planned dinners need this item.
-const menuTag = (uses) => `For ${uses.map((u) => `${shortDay(u.plan_date)} ${u.recipeName}`).join(', ')}`
+// Next week's dinners carry the date too ("Tue 13"), so the two weeks can't be mixed up.
+const menuTag = (uses, nextMonday) =>
+  `For ${uses
+    .map((u) => `${shortDay(u.plan_date)}${u.plan_date >= nextMonday ? ` ${dayNumber(u.plan_date)}` : ''} ${u.recipeName}`)
+    .join(', ')}`
+
+// The calendar weeks the Menu tab shows: this one (from today) and the next, as "YYYY-MM-DD".
+function menuWeeks() {
+  const thisMonday = startOfWeek(new Date())
+  return {
+    today: today(),
+    nextMonday: toISODate(addDays(thisMonday, 7)),
+    nextSunday: toISODate(addDays(thisMonday, 13)),
+  }
+}
 
 const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`
 
@@ -91,23 +106,29 @@ export default function ShoppingScreen() {
   const [actionError, setActionError] = useState(null)
   const [message, setMessage] = useState(null) // e.g. "Restocked 4 items."
   const [searchParams] = useSearchParams()
-  // The Menu screen links here with ?show=menu to open on the "This week" chip.
-  const [storeFilter, setStoreFilter] = useState(searchParams.get('show') === MENU ? MENU : 'all')
-  const [menuUses, setMenuUses] = useState(new Map()) // item_id → planned dinners that need it
+  // The Menu screen links here with ?show=menu (this week) or ?show=next to open on that chip.
+  const shown = searchParams.get('show')
+  const [storeFilter, setStoreFilter] = useState(shown === MENU || shown === NEXT ? shown : 'all')
+  // item_id → planned dinners that need it: both weeks (for the tags), and each week (for its chip)
+  const [menuUses, setMenuUses] = useState({ all: new Map(), [MENU]: new Map(), [NEXT]: new Map() })
+  const weeks = menuWeeks()
   const [busy, setBusy] = useState(false)
   const [reloadCount, setReloadCount] = useState(0)
   const reload = () => setReloadCount((n) => n + 1)
 
   useEffect(() => {
     let ignore = false
-    // Dinners planned for the next 7 days (today included), to tag the items they need.
-    const from = today()
-    const to = toISODate(addDays(new Date(), 6))
-    Promise.all([fetchShoppingList(), fetchPlan(from, to).catch(() => [])]) // no plan → no tags
+    // Dinners planned from today to the end of next week, to tag the items they need.
+    const { today: from, nextMonday, nextSunday } = menuWeeks()
+    Promise.all([fetchShoppingList(), fetchPlan(from, nextSunday).catch(() => [])]) // no plan → no tags
       .then(([data, plan]) => {
         if (ignore) return
         setItems(data)
-        setMenuUses(neededByMenu(plan))
+        setMenuUses({
+          all: neededByMenu(plan),
+          [MENU]: neededByMenu(plan.filter((p) => p.plan_date < nextMonday)),
+          [NEXT]: neededByMenu(plan.filter((p) => p.plan_date >= nextMonday)),
+        })
         setLoadError(null)
       })
       .catch((err) => {
@@ -191,17 +212,28 @@ export default function ShoppingScreen() {
   const groups = groupByStore(items)
   const chips = storeChips(items)
   // If the chosen store has nothing left (e.g. after finishing), fall back to All.
-  const menuItems = items
-    .filter((i) => menuUses.has(i.id))
-    .map((i) => ({ ...i, alsoAt: [], atStores: i.stores.length ? i.stores.map((s) => s.name).sort() : null }))
+  // The two week chips: the items each week's dinners need. An item both weeks need is in both
+  // (it's still one item: ticking it in one ticks it in the other).
+  const weekItems = (key) =>
+    items
+      .filter((i) => menuUses[key].has(i.id))
+      .map((i) => ({ ...i, alsoAt: [], atStores: i.stores.length ? i.stores.map((s) => s.name).sort() : null }))
+  const weekChips = [
+    { key: MENU, label: 'This week', heading: 'For this week’s dinners', items: weekItems(MENU) },
+    { key: NEXT, label: 'Next week', heading: 'For next week’s dinners', items: weekItems(NEXT) },
+  ].filter((w) => w.items.length > 0)
   const activeChip = chips.find((c) => c.key === storeFilter)
-  const activeFilter = activeChip || (storeFilter === MENU && menuItems.length > 0) ? storeFilter : 'all'
+  const activeWeek = weekChips.find((w) => w.key === storeFilter)
+  const activeFilter = activeChip || activeWeek ? storeFilter : 'all'
   const visibleGroups =
     activeFilter === 'all'
       ? groups
-      : activeFilter === MENU
-        ? [{ key: MENU, name: 'For this week’s dinners', items: menuItems }]
+      : activeWeek
+        ? [{ key: activeWeek.key, name: activeWeek.heading, items: activeWeek.items }]
         : [{ key: activeChip.key, name: activeChip.name, items: itemsAtStore(items, activeChip.key) }]
+  // On a week chip, each row's tag lists only that week's dinners; elsewhere, both weeks'.
+  const tagUses = activeWeek ? menuUses[activeWeek.key] : menuUses.all
+  const nextWeekRange = `${shortDay(weeks.nextMonday)} ${dayNumber(weeks.nextMonday)} – ${shortDay(weeks.nextSunday)} ${dayNumber(weeks.nextSunday)}`
   const cartCount = items.filter((i) => i.in_cart).length
 
   return (
@@ -213,13 +245,15 @@ export default function ShoppingScreen() {
           : activeFilter === 'all'
             ? `${plural(items.length, 'item')} across ${plural(groups.length, 'store')}`
             : activeFilter === MENU
-              ? 'Needed for dinners planned in the next 7 days'
+              ? 'Needed for this week’s dinners, today to Sunday'
+              : activeFilter === NEXT
+              ? `Needed for next week’s dinners, ${nextWeekRange}`
               : activeFilter === ANY_STORE
               ? 'Items with no store picked — buy them anywhere'
               : `Everything you can get at ${activeChip.name}`}
       </p>
 
-      {(chips.length > 1 || menuItems.length > 0) && (
+      {(chips.length > 1 || weekChips.length > 0) && (
         <div className="filter-chips filter-chips--scroll" role="group" aria-label="Show store">
           <button
             type="button"
@@ -229,16 +263,17 @@ export default function ShoppingScreen() {
           >
             All
           </button>
-          {menuItems.length > 0 && (
+          {weekChips.map((w) => (
             <button
+              key={w.key}
               type="button"
-              className={activeFilter === MENU ? 'chip is-on' : 'chip'}
-              aria-pressed={activeFilter === MENU}
-              onClick={() => setStoreFilter(MENU)}
+              className={activeFilter === w.key ? 'chip is-on' : 'chip'}
+              aria-pressed={activeFilter === w.key}
+              onClick={() => setStoreFilter(w.key)}
             >
-              This week {menuItems.length}
+              {w.label} {w.items.length}
             </button>
-          )}
+          ))}
           {chips.map((c) => (
             <button
               key={c.key}
@@ -288,7 +323,9 @@ export default function ShoppingScreen() {
                   <div className="item-text">
                     <span className="item-name">{item.name}</span>
                     <span className="item-store">{rowDetails(item)}</span>
-                    {menuUses.has(item.id) && <span className="menu-tag">{menuTag(menuUses.get(item.id))}</span>}
+                    {tagUses.has(item.id) && (
+                      <span className="menu-tag">{menuTag(tagUses.get(item.id), weeks.nextMonday)}</span>
+                    )}
                   </div>
                   <span className={`pill pill-${item.status}`}>{item.status.toUpperCase()}</span>
                 </li>

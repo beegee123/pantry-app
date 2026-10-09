@@ -31,7 +31,8 @@ function weekTitle(monday) {
 
 // Step 18: what the rest of the week still needs. Out and Low items are already on the
 // shopping list (that's how the list works), so this card just shows them and links there.
-function WeekNeeds({ plan, fromDate, title }) {
+// show: which Shopping chip the link opens on ('menu' = This week, 'next' = Next week, null = All).
+function WeekNeeds({ plan, fromDate, title, show }) {
   const upcoming = plan.filter((p) => p.plan_date >= fromDate)
   if (upcoming.length === 0) return null
 
@@ -55,7 +56,7 @@ function WeekNeeds({ plan, fromDate, title }) {
         {title} needs {plural(needed.size, 'item')}
       </p>
       <p className="week-needs-list">{list.join(' · ')}</p>
-      <Link to="/shopping?show=menu" className="text-link">
+      <Link to={show ? `/shopping?show=${show}` : '/shopping'} className="text-link">
         Already on your shopping list ›
       </Link>
     </div>
@@ -350,6 +351,7 @@ export default function MenuScreen() {
               plan={plan}
               fromDate={isThisWeek ? todayISO : dates[0]}
               title={weekTitle(monday).startsWith('Week of') ? 'This menu' : weekTitle(monday)}
+              show={isThisWeek ? 'menu' : weekTitle(monday) === 'Next week' ? 'next' : null}
             />
           )}
         </main>

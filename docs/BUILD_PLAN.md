@@ -103,6 +103,7 @@ Screens: Weekly menu, Generate a week. Done when one button plans the week and f
 - [x] **Step 16a — Rearrange the week.** A small Rearrange link next to the dinner count turns the week into tap targets: tap a dinner, then the day to move it to. An empty day takes it; a planned day swaps with it (both saved in one request). Past days stay put, failed saves snap back, and Done returns to the normal, uncluttered view.
 - [ ] **Step 17 — Lock and re-roll.** Keep locked days; regenerate the rest.
 - [x] **Step 18 — Week to shopping list.** Out and Low items are already on the shopping list, so there's no button. Instead, the Menu screen shows "This week needs 2 items: Rice (Thu) · Tomato paste (Thu)" with a link to the list, and the Shopping list tags each item with the dinners that need it ("For Thu Jollof rice") and adds a This week chip covering the next 7 days.
+- [x] **Step 18a — This week and Next week.** The Shopping list's week chip is split in two, matching the Menu tab's calendar weeks: This week (today to Sunday) and Next week (Monday to Sunday). Next week's tags carry the date ("For Tue 13 …"). An item both weeks need is in both chips but is one item, ticked once. The Menu's shopping link opens the matching chip.
 
 Phase 3a (steps 14, 15 and 18), the generator (step 16) and rearranging (step 16a) are complete. Next: lock and re-roll (step 17).
 
